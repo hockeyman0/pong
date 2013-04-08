@@ -1,6 +1,16 @@
 #! /usr/bin/env python
 
 
+
+#
+#$Author$
+#$Date$
+#$HeadURL$
+#$Revision$
+#
+
+
+
 import sys
 import os
 import re
@@ -14,6 +24,43 @@ notpause = 1
 notballspeed = [0,0]
 ballspeed = [0,0]
 
+
+
+class Ball:
+	def __init__(self, ISpeedX, ISpeedY, radius):
+		self.ISpeed = [ISpeedX, ISpeedY]
+		self.radius = radius
+		self.Cspeed = [0,0]
+		self.NCspeed = [0,0]
+		
+		
+	def getISpeed(self):
+		return self.ISpeed
+		
+	def getRadius(self):
+		return self.radius
+		
+	def IncreaseSpeed(self):
+		pass
+		
+		
+class Paddle:
+	def __init__(self, paddlenum, paddleheight, paddlewidth, paddlespeed):
+		self.paddlenum = paddlenum
+		self.paddleheight = paddleheight
+		self.paddlewidth = paddlewidth
+		self.paddlespeed = paddlespeed
+
+
+
+
+
+
+
+
+#DEFINED FUNCTIONS######
+##################################################################
+##################################################################
 
 def handle_key_event(event):
 	print event.keysym
@@ -144,7 +191,7 @@ def RestartGame():
 
 
 
-
+Cato = {}
 
 
 argv = len(sys.argv)
@@ -162,7 +209,9 @@ Arr = []
 for line in InFile:
 	arrr = []
 	print line
+	
 	line = line.split(":")
+	Cato[line[0]] = int(line[1])
 	Arr.append(int(line[1]))
 	#print line
 print Arr
@@ -176,7 +225,13 @@ CanvasHeight = int(Arr[5])
 MaxBallSpeed = int(Arr[6])
 MinBallSpeed = int(Arr[7])
 
+
 Root = Tk()
+
+
+
+
+
 
 
 
