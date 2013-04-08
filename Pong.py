@@ -1,12 +1,29 @@
 #! /usr/bin/env python
 
+
 import sys
 import os
 import re
 import math
 from Tkinter import *
 
-
+def handle_key_event(event):
+	if re.match(r"[ws]", event.keysym):
+		Root.after(20, movepaddle(1,event.keysym))
+	elif re.match(r"[(Up)(Down)]", event.keysym):
+		Root.after(20, movepaddle(2,event.keysym))
+		
+def movepaddle(paddleNum, direction):
+	if direction == "w":
+		w.move(Paddle1, 0, -5)
+	if direction == "s":
+		w.move(Paddle1, 0, 5)
+	if direction == "Up":
+		w.move(Paddle2, 0, -5)
+	if direction == "Down":
+		w.move(Paddle2, 0, 5)
+	#print direction
+	
 
 
 argv = len(sys.argv)
@@ -56,9 +73,22 @@ w = Canvas(Root, width=CanvasWidth, height=CanvasHeight)
 w.grid(row=1, column=0, columnspan=5, sticky = S)
 
 
-paddle1 = w.create_rectangle(5, 35, 30, 115, fill="white")
-paddle2 = w.create_rectangle(500, 35+300, 475, 115+300, fill="white")
+Paddle1 = w.create_rectangle(5, 35, 30, 115, fill="white")
+Paddle2 = w.create_rectangle(500, 35+300, 475, 115+300, fill="white")
 
-ball = w.create_oval(30,(35+115)/2-10,30+20,(35+115)/2+10, fill="white")
+bbPaddle1 = w.bbox(Paddle1)
+bbPaddle2 = w.bbox(Paddle2)
+
+
+Ball = w.create_oval(30,(35+115)/2-10,30+20,(35+115)/2+10, fill="white")
+
+
+Root.bind("<Key>", handle_key_event)
+
+
 
 Root.mainloop()
+
+
+#All Rights Reserved
+#Christohper Holly 2013 
