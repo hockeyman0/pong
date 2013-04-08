@@ -57,17 +57,17 @@ def PauseGame():
 def movepaddle(paddleNum, direction):
 	global Start
 	if direction == "w" and pause == 0:
-		w.move(Paddle1, 0, -5)
+		w.move(Paddle1, 0, -10)
 		if Start == 0:
-			w.move(Ball, 0, -5)
+			w.move(Ball, 0, -10)
 	if direction == "s" and pause == 0:
-		w.move(Paddle1, 0, 5)
+		w.move(Paddle1, 0, 10)
 		if Start ==0:
-			w.move(Ball, 0, 5)
+			w.move(Ball, 0, 10)
 	if direction == "Up" and pause == 0:
-		w.move(Paddle2, 0, -5)
+		w.move(Paddle2, 0, -10)
 	if direction == "Down" and pause == 0:
-		w.move(Paddle2, 0, 5)
+		w.move(Paddle2, 0, 10)
 		
 	
 def process_collision(Ball, Other):
@@ -76,6 +76,7 @@ def process_collision(Ball, Other):
 	y = ballspeed[1]
 	
 	if Other == Paddle1 or Other == Paddle2:
+		print "Paddle"
 		ballspeed = [-x,y]
 	if Other == WallTop or Other == WallBottom:
 		ballspeed = [x,-y]
@@ -93,7 +94,22 @@ def process_collision(Ball, Other):
 
 
 def moveBall():
-	pass
+	print ballspeed
+	w.move(Ball, ballspeed[0],ballspeed[1])
+	Root.after(20, moveBall)
+
+
+
+
+def checkcollision():
+	bbBall = w.bbox(Ball)
+	for objid in w.find_overlapping(bbBall[0], bbBall[1], bbBall[2], bbBall[3]):
+		if objid != Ball: 
+			process_collision(Ball , objid)
+	Root.after(5, checkcollision)
+
+
+
 
 
 
@@ -120,7 +136,8 @@ for line in InFile:
 	#print line
 print Arr
 InitialBallSpeedX = int(Arr[0])
-InitialBallSPeedY = int(Arr[1])
+print InitialBallSpeedX
+InitialBallSpeedY = int(Arr[1])
 PaddleSpeed = int(Arr[2])
 BallRadius = int(Arr[3])
 CanvasWidth = int(Arr[4])
@@ -153,10 +170,10 @@ w = Canvas(Root, width=CanvasWidth, height=CanvasHeight)
 w.grid(row=1, column=0, columnspan=5, sticky = S)
 
 
-WallLeft = w.create_line(0,0,0,500, fill="white")
-WallRight = w.create_line(500,0,500,500, fill="white")
-WallTop = w.create_line(0,0,500,0,fill="white")
-WallBottom = w.create_line(0,500,500,500,fill="white")
+WallLeft = w.create_line(0,0,0,500, fill="black")
+WallRight = w.create_line(500,0,500,500, fill="black")
+WallTop = w.create_line(0,0,500,0,fill="black")
+WallBottom = w.create_line(0,500,500,500,fill="black")
 
 
 
@@ -167,7 +184,7 @@ bbPaddle1 = w.bbox(Paddle1)
 bbPaddle2 = w.bbox(Paddle2)
 
 
-Ball = w.create_oval(30+1,(35+115)/2-10,30+20,(35+115)/2+10, fill="white")
+Ball = w.create_oval(30+1+5,(35+115)/2-10+5,30+20+5,(35+115)/2+10+5, fill="white")
 bbBall = w.bbox(Ball)
 
 Root.bind("<Key>", handle_key_event)
@@ -176,10 +193,8 @@ Root.bind("<Key>", handle_key_event)
 
 
 #bb = w.bbox(rect_id)
-for objid in w.find_overlapping(bbBall[0], bbBall[1], bbBall[2], bbBall[3]):
-	if objid != Ball: 
-		process_collision(Ball , objid)
 
+Root.after(5, checkcollision)
 
 
 Root.after(20, moveBall)
