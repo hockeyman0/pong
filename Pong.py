@@ -63,6 +63,8 @@ class Paddle:
 ##################################################################
 
 def handle_key_event(event):
+	global EndGame
+	
 	print event.keysym
 	if re.match(r"[ws]", event.keysym):
 		Root.after(20, movepaddle(1,event.keysym))
@@ -72,6 +74,14 @@ def handle_key_event(event):
 		PauseGame()
 	if event.keysym == "space":
 		StartGame()
+	if event.keysym == "Return":
+		#print EndGame
+		if EndGame == 1:
+			#print "GOLD"
+			RestartGame()
+			
+def handle_key_release_event(event):
+	pass
 			
 		
 		
@@ -145,7 +155,7 @@ def process_collision(Ball, Other):
 
 
 def moveBall():
-	print ballspeed
+	#print ballspeed
 	w.move(Ball, ballspeed[0],ballspeed[1])
 	Root.after(20, moveBall)
 
@@ -161,6 +171,7 @@ def checkcollision():
 
 
 def RestartGame():
+	print "Restarting Game"
 	global Start
 	global pause
 	global notpause
@@ -214,16 +225,20 @@ for line in InFile:
 	Cato[line[0]] = int(line[1])
 	Arr.append(int(line[1]))
 	#print line
-print Arr
-InitialBallSpeedX = int(Arr[0])
-print InitialBallSpeedX
-InitialBallSpeedY = int(Arr[1])
-PaddleSpeed = int(Arr[2])
-BallRadius = int(Arr[3])
-CanvasWidth = int(Arr[4])
-CanvasHeight = int(Arr[5])
-MaxBallSpeed = int(Arr[6])
-MinBallSpeed = int(Arr[7])
+#print Arr
+InitialBallSpeedX = Cato.get("InitialBallSpeedX")
+#print InitialBallSpeedX
+InitialBallSpeedY = Cato.get("InitialBallSpeedY")
+PaddleSpeed = Cato.get("PaddleSpeed")
+BallRadius = Cato.get("BallRadius")
+CanvasWidth = Cato.get("CanvasWidth")
+CanvasHeight = Cato.get("CanvasHeight")
+MaxBallSpeed = Cato.get("MaxBallSpeed")
+MinBallSpeed = Cato.get("MinBallSpeed")
+
+
+
+
 
 
 Root = Tk()
@@ -279,6 +294,7 @@ bbBall = w.bbox(Ball)
 
 
 Root.bind("<Key>", handle_key_event)
+Root.bind("KeyRelease", handle_key_release_event)
 
 
 
