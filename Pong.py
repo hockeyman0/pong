@@ -75,11 +75,15 @@ def process_collision(Ball, Other):
 	x = ballspeed[0]
 	y = ballspeed[1]
 	
-	if Other == Paddle1 or Other == Paddle2:
-		print "Paddle"
-		ballspeed = [-x,y]
-	if Other == WallTop or Other == WallBottom:
-		ballspeed = [x,-y]
+	if Other == Paddle1:
+		#print "Paddle"
+		ballspeed = [abs(x),y]
+	if Other == Paddle2:
+		ballspeed = [-(abs(x)),y]
+	if Other == WallTop:
+		ballspeed = [x,abs(y)]
+	if Other == WallBottom:
+		ballspeed = [x, -(abs(y))]
 	if Other == WallLeft or Other == WallRight:
 		global pause
 		global notpause
@@ -109,6 +113,30 @@ def checkcollision():
 	Root.after(5, checkcollision)
 
 
+def RestartGame():
+	global Start
+	global pause
+	global notpause
+	global EndGame
+	global notballspeed
+	global ballspeed
+	global Ball
+	global Paddle1
+	global Paddle2
+	
+	EndGame = 0
+	Start = 0
+	pause = 0
+	notpause = 1
+	notballspeed = [0,0]
+	ballspeed = [0,0]
+	w.coords(Paddle1, 5, 35, 30, 115)
+	w.coords(Paddle2, CanvasWidth,CanvasHeight-165, CanvasWidth-25, CanvasHeight-85)
+	w.coords(Ball, 30+1+1,(35+115)/2-10+1,30+20+1,(35+115)/2+10+1)
+	
+	
+	
+
 
 
 
@@ -132,7 +160,10 @@ if (os.access(argo, os.R_OK) == 0):
 InFile = open(argo, "r")
 Arr = []
 for line in InFile:
-	Arr.append(int(line))
+	arrr = []
+	print line
+	line = line.split(":")
+	Arr.append(int(line[1]))
 	#print line
 print Arr
 InitialBallSpeedX = int(Arr[0])
@@ -154,10 +185,10 @@ Root = Tk()
 
 
 
-Restart_Button = Button(Root, text="Restart", )#command=Print_Message)
+Restart_Button = Button(Root, text="Restart", command = RestartGame )#command=Print_Message)
 Restart_Button.grid(row=0, column=0,columnspan =2, sticky = W)
 
-Pause_Button = Button(Root, text="Pause", )#command=Print_Message)
+Pause_Button = Button(Root, text="Pause", command=PauseGame )#command=Print_Message)
 Pause_Button.grid(row=0, column=1, sticky = W)
 
 
@@ -167,13 +198,15 @@ Exit_Button.grid(row=0, column=4, sticky=E)
 
 w = Canvas(Root, width=CanvasWidth, height=CanvasHeight) 
 
+
+
 w.grid(row=1, column=0, columnspan=5, sticky = S)
 
 
-WallLeft = w.create_line(0,0,0,500, fill="black")
-WallRight = w.create_line(500,0,500,500, fill="black")
-WallTop = w.create_line(0,0,500,0,fill="black")
-WallBottom = w.create_line(0,500,500,500,fill="black")
+WallLeft = w.create_line(5,0,5,CanvasHeight, fill="white")
+WallRight = w.create_line(CanvasWidth,0,CanvasWidth,CanvasHeight, fill="white")
+WallTop = w.create_line(0,5,CanvasWidth,5,fill="white")
+WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 
 
 
@@ -184,21 +217,18 @@ bbPaddle1 = w.bbox(Paddle1)
 bbPaddle2 = w.bbox(Paddle2)
 
 
-Ball = w.create_oval(30+1+5,(35+115)/2-10+5,30+20+5,(35+115)/2+10+5, fill="white")
+Ball = w.create_oval(30+1+1,(35+115)/2-10+1,30+20+1,(35+115)/2+10+1, fill="white")
 bbBall = w.bbox(Ball)
+
+
+
 
 Root.bind("<Key>", handle_key_event)
 
 
 
-
-#bb = w.bbox(rect_id)
-
 Root.after(5, checkcollision)
-
-
 Root.after(20, moveBall)
-
 Root.mainloop()
 
 

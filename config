@@ -1,8 +1,8 @@
--2
-0
-2
-10
-500
-500
-10
-10
+InitialBallSpeedX: 2
+InitialBallSpeedY: 3
+PaddleSpeed: 10
+BallRadius: 10
+CanvasWidth: 500
+CanvasHeight: 500
+MaxBallSpeed: 10
+MinBallSpeed: 10
