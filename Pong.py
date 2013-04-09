@@ -25,8 +25,7 @@ notballspeed = [0,0]
 ballspeed = [0,0]
 
 
-
-class Ball:
+class Ballc:
 	def __init__(self, ISpeedX, ISpeedY, radius):
 		self.ISpeed = [ISpeedX, ISpeedY]
 		self.radius = radius
@@ -44,43 +43,81 @@ class Ball:
 		pass
 		
 		
-class Paddle:
-	def __init__(self, paddlenum, paddleheight, paddlewidth, paddlespeed):
+class Paddlec:
+	def __init__(self, paddlenum, paddlewidth, paddleheight, paddlespeed):
 		self.paddlenum = paddlenum
 		self.paddleheight = paddleheight
 		self.paddlewidth = paddlewidth
 		self.paddlespeed = paddlespeed
-
-
-
-
-
-
+		self.moveup = 0
+		self.movedown = 0
+	def startmoveup(self):
+		self.moveup = -(self.paddlespeed)
+		print self.moveup
+	def startmovedown(self):
+		self.movedown = (self.paddlespeed)
+		print self.movedown
+	def endmoveup(self):
+		self.moveup = 0
+		print self.moveup
+	def endmovedown(self):
+		self.movedown = 0
+		print self.movedown
+		
 
 
 #DEFINED FUNCTIONS######
 ##################################################################
 ##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+##################################################################
+
+
 
 def handle_key_event(event):
 	global EndGame
-	
+	global Paddle1c
+	global Paddle2c
 	print event.keysym
-	if re.match(r"[ws]", event.keysym):
-		Root.after(20, movepaddle(1,event.keysym))
-	elif re.match(r"[(Up)(Down)]", event.keysym):
-		Root.after(20, movepaddle(2,event.keysym))
+	
+	
+	if event.char == "w":
+		Paddle1c.startmoveup()
+	if event.char == "s":
+		Paddle1c.startmovedown()
+		
+	if event.keysym == "Up":
+		Paddle2c.startmoveup()
+	if event.keysym == "Down":
+		Paddle2c.startmovedown()
+		
+		
 	if event.char == "p":
 		PauseGame()
 	if event.keysym == "space":
 		StartGame()
 	if event.keysym == "Return":
-		#print EndGame
 		if EndGame == 1:
-			#print "GOLD"
 			RestartGame()
 			
 def handle_key_release_event(event):
+	print event.keysym
+	global EndGame
+	global Paddle1c
+	global Paddle2c
+	if event.char == "w":
+		Paddle1c.endmoveup()
+	if event.char == "s":
+		Paddle1c.endmovedown()
+		
+	if event.keysym == "Up":
+		Paddle2c.endmoveup()
+	if event.keysym == "Down":
+		Paddle2c.endmovedown()
 	pass
 			
 		
@@ -111,20 +148,20 @@ def PauseGame():
 	print pause	
 	
 		
-def movepaddle(paddleNum, direction):
+def movepaddle():
+	global Paddle1c
+	global Paddle2c
 	global Start
-	if direction == "w" and pause == 0:
-		w.move(Paddle1, 0, -10)
-		if Start == 0:
-			w.move(Ball, 0, -10)
-	if direction == "s" and pause == 0:
-		w.move(Paddle1, 0, 10)
-		if Start ==0:
-			w.move(Ball, 0, 10)
-	if direction == "Up" and pause == 0:
-		w.move(Paddle2, 0, -10)
-	if direction == "Down" and pause == 0:
-		w.move(Paddle2, 0, 10)
+	move1 = Paddle1c.moveup + Paddle1c.movedown
+	move2 = Paddle2c.moveup + Paddle2c.movedown
+	w.move(Paddle1, 0, move1)
+	w.move(Paddle2, 0, move2)
+	Root.after(20, movepaddle)
+	if Start == 0:
+		w.move(Ball, 0, move1)
+		
+		
+		
 		
 	
 def process_collision(Ball, Other):
@@ -194,6 +231,16 @@ def RestartGame():
 	
 	
 	
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
+	##################################################################
 
 
 
@@ -236,7 +283,9 @@ CanvasHeight = Cato.get("CanvasHeight")
 MaxBallSpeed = Cato.get("MaxBallSpeed")
 MinBallSpeed = Cato.get("MinBallSpeed")
 
-
+Paddle1c = Paddlec(1,25,80,PaddleSpeed)
+Paddle2c = Paddlec(2,25,80,PaddleSpeed)
+Ballc = Ballc(InitialBallSpeedX, InitialBallSpeedY, BallRadius)
 
 
 
@@ -280,26 +329,27 @@ WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 
 
 
-Paddle1 = w.create_rectangle(5, 35, 30, 115, fill="white")
-Paddle2 = w.create_rectangle(500, 35+300, 475, 115+300, fill="white")
+Paddle1 = w.create_rectangle(5, 35, 5+Paddle1c.paddlewidth, 35+Paddle1c.paddleheight, fill="white")
+Paddle2 = w.create_rectangle(CanvasWidth, CanvasHeight-50, CanvasWidth-Paddle2c.paddlewidth, CanvasHeight-50-Paddle2c.paddleheight, fill="white")
 
 bbPaddle1 = w.bbox(Paddle1)
 bbPaddle2 = w.bbox(Paddle2)
+centerofpaddle = (35+35+Paddle1c.paddleheight)/2
 
-
-Ball = w.create_oval(30+1+1,(35+115)/2-10+1,30+20+1,(35+115)/2+10+1, fill="white")
+Ball = w.create_oval(6+Paddle1c.paddlewidth,centerofpaddle-Ballc.radius,6+Paddle1c.paddlewidth+(2*Ballc.radius),centerofpaddle+Ballc.radius, fill="white")
 bbBall = w.bbox(Ball)
 
 
 
 
 Root.bind("<Key>", handle_key_event)
-Root.bind("KeyRelease", handle_key_release_event)
+Root.bind("<KeyRelease>", handle_key_release_event)
 
 
 
 Root.after(5, checkcollision)
 Root.after(20, moveBall)
+Root.after(20, movepaddle)
 Root.mainloop()
 
 
