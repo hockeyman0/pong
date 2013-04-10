@@ -49,6 +49,16 @@ class Ballc:
 		self.CSpeed[1] = self.ISpeed[1]
 		
 		
+		
+	def FlipSpeeds(self):
+		temp = self.CSpeed[0]
+		self.CSpeed[0] = self.NCSpeed[0]
+		self.NCSpeed[0] = temp
+		temp = self.CSpeed[1]
+		self.CSpeed[1] = self.NCSpeed[1]
+		self.NCSpeed[1] = temp
+		
+		
 class Paddlec:
 	def __init__(self, paddlenum, paddlewidth, paddleheight, paddlespeed):
 		self.paddlenum = paddlenum
@@ -73,7 +83,17 @@ class Paddlec:
 		self.obj = obj
 	
 		
-
+class Board:
+	def __init__(self, CanvasWidth, CanvasHeight, WallLeft, WallTop, WallRight, WallBottom):
+		self.CanvasWidth = CanvasWidth
+		self.CanvasHeight = CanvasHeight
+		self.WallLeft = WallLeft
+		self.WallTop = WallTop
+		self.WallRight = WallRight
+		self.WallBottom = WallBottom
+		
+		
+		
 
 #DEFINED FUNCTIONS######
 ##################################################################
@@ -148,6 +168,7 @@ def PauseGame():
 	global notpause
 	global ballspeed
 	global notballspeed
+	global Ball
 	temp = pause
 	pause = notpause
 	notpause = temp
@@ -158,6 +179,7 @@ def PauseGame():
 	ballspeed[1] = notballspeed[1]
 	notballspeed[1] = temp
 	#print pause	
+	Ballc.FlipSpeeds()
 	
 		
 def movepaddle():
@@ -189,12 +211,24 @@ def process_collision(Mover, Other):
 		if Other == Paddle1:
 		#print "Paddle"
 			ballspeed = [abs(x),y]
+			Ballc.CSpeed[0] = x
+			Ballc.CSpeed[1] = y
+			Ballc.CSpeed = [abs(x),y]
 		if Other == Paddle2:
 			ballspeed = [-(abs(x)),y]
+			Ballc.CSpeed[0] = x
+			Ballc.CSpeed[1] = y
+			Ballc.CSpeed = [-(abs(x)),y]
 		if Other == WallTop:
 			ballspeed = [x,abs(y)]
+			Ballc.CSpeed[0] = x
+			Ballc.CSpeed[1] = y
+			Ballc.CSpeed = [x,abs(y)]
 		if Other == WallBottom:
 			ballspeed = [x, -(abs(y))]
+			Ballc.CSpeed[0] = x
+			Ballc.CSpeed[1] = y
+			Ballc.CSpeed = [x,-(abs(y))]
 		if Other == WallLeft or Other == WallRight:
 			global pause
 			global notpause
@@ -207,19 +241,27 @@ def process_collision(Mover, Other):
 			pause = 1
 			notpause = 1
 			ballspeed = [0,0]
+			Ballc.CSpeed = [0,0]
 			EndGame = 1
 			
-	if Mover == Paddle1:
+	if Mover == Paddle1c.obj:
 		if Other == WallTop:
 			Paddle1c.moveup = 0
+		if Other == WallBottom:
+			Paddle1c.movedown = 0
+	
+	if Mover == Paddle2c.obj:
+		if Other == WallTop:
+			Paddle2c.moveup = 0
+		if Other == WallBottom:
+			Paddle2c.movedown = 0
 		
 
 
 
 def moveBall():
 	global Ballc
-	#print ballspeed
-	w.move(Ballc.obj, ballspeed[0],ballspeed[1])
+	w.move(Ballc.obj, Ballc.CSpeed[0], Ballc.CSpeed[1])
 	Root.after(20, moveBall)
 
 
@@ -230,10 +272,23 @@ def checkcollision():
 	global Paddle1c
 	global Paddle2c
 	bbBall = w.bbox(Ball)
+	bbPaddle1 = w.bbox(Paddle1c.obj)
+	bbPaddle2 = w.bbox(Paddle2c.obj)
 	for objid in w.find_overlapping(bbBall[0], bbBall[1], bbBall[2], bbBall[3]):
 		if objid != Ball: 
 			process_collision(Ball , objid)
+	for objid in w.find_overlapping(bbPaddle1[0], bbPaddle1[1], bbPaddle1[2], bbPaddle1[3]):
+		if objid != Paddle1c.obj: 
+			process_collision(Paddle1c.obj , objid)
+				
+	for objid in w.find_overlapping(bbPaddle2[0], bbPaddle2[1], bbPaddle2[2], bbPaddle2[3]):
+		if objid != Paddle2c.obj: 
+			process_collision(Paddle2c.obj , objid)
 	Root.after(5, checkcollision)
+
+
+
+
 
 
 def RestartGame():
@@ -248,13 +303,19 @@ def RestartGame():
 	global Paddle1
 	global Paddle2
 	global centerofpaddle
+	global Paddle1c
+	global Paddle2c
+	global Ballc
+	global GameBoard
 	EndGame = 0
 	Start = 0
 	pause = 0
 	notpause = 1
 	notballspeed = [0,0]
 	ballspeed = [0,0]
-	w.coords(Paddle1, 5, 35, 30, 115)
+	Ballc.NCSpeed = [0,0]
+	Ballc.CSpeed = [0,0]
+	w.coords(Paddle1c.obj, 5, 35, 5+Paddle1c.paddlewidth, 35+Paddle1c.paddleheight)
 	w.coords(Paddle2c.obj,CanvasWidth, CanvasHeight-50, CanvasWidth-Paddle2c.paddlewidth, CanvasHeight-50-Paddle2c.paddleheight)
 	#w.coords(Ballc.obj, 30+1+1,(35+115)/2-10+1,30+20+1,(35+115)/2+10+1)
 	w.coords(Ballc.obj, 6+Paddle1c.paddlewidth,centerofpaddle-Ballc.radius,6+Paddle1c.paddlewidth+(2*Ballc.radius),centerofpaddle+Ballc.radius)
@@ -337,10 +398,10 @@ Root = Tk()
 
 
 
-Restart_Button = Button(Root, text="Restart", command = RestartGame )#command=Print_Message)
+Restart_Button = Button(Root, text="Restart", command = RestartGame)#command=Print_Message)
 Restart_Button.grid(row=0, column=0,columnspan =2, sticky = W)
 
-Pause_Button = Button(Root, text="Pause", command=PauseGame )#command=Print_Message)
+Pause_Button = Button(Root, text="Pause", command=PauseGame)#command=Print_Message)
 Pause_Button.grid(row=0, column=1, sticky = W)
 
 
@@ -359,6 +420,9 @@ WallLeft = w.create_line(5,0,5,CanvasHeight, fill="white")
 WallRight = w.create_line(CanvasWidth,0,CanvasWidth,CanvasHeight, fill="white")
 WallTop = w.create_line(0,5,CanvasWidth,5,fill="white")
 WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
+
+
+GameBoard = Board(CanvasWidth, CanvasHeight, WallLeft, WallTop,WallRight,WallBottom)
 
 
 
