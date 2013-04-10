@@ -29,8 +29,8 @@ class Ballc:
 	def __init__(self, ISpeedX, ISpeedY, radius):
 		self.ISpeed = [ISpeedX, ISpeedY]
 		self.radius = radius
-		self.Cspeed = [0,0]
-		self.NCspeed = [0,0]
+		self.CSpeed = [0,0]
+		self.NCSpeed = [0,0]
 		
 		
 	def getISpeed(self):
@@ -41,6 +41,12 @@ class Ballc:
 		
 	def IncreaseSpeed(self):
 		pass
+		
+	def InputObject(self, obj):
+		self.obj = obj
+	def StartSpeed(self):
+		self.CSpeed[0] = self.ISpeed[0]
+		self.CSpeed[1] = self.ISpeed[1]
 		
 		
 class Paddlec:
@@ -53,16 +59,19 @@ class Paddlec:
 		self.movedown = 0
 	def startmoveup(self):
 		self.moveup = -(self.paddlespeed)
-		print self.moveup
+		#print self.moveup
 	def startmovedown(self):
 		self.movedown = (self.paddlespeed)
-		print self.movedown
+		#print self.movedown
 	def endmoveup(self):
 		self.moveup = 0
-		print self.moveup
+		#print self.moveup
 	def endmovedown(self):
 		self.movedown = 0
-		print self.movedown
+		#print self.movedown
+	def InputObject(self, obj):
+		self.obj = obj
+	
 		
 
 
@@ -82,7 +91,7 @@ def handle_key_event(event):
 	global EndGame
 	global Paddle1c
 	global Paddle2c
-	print event.keysym
+	#print event.keysym
 	
 	
 	if event.char == "w":
@@ -105,7 +114,7 @@ def handle_key_event(event):
 			RestartGame()
 			
 def handle_key_release_event(event):
-	print event.keysym
+	#print event.keysym
 	global EndGame
 	global Paddle1c
 	global Paddle2c
@@ -124,12 +133,15 @@ def handle_key_release_event(event):
 		
 def StartGame():
 	global Start
+	global Ballc
 	if Start == 0:
 		Start = 1
 		global ballspeed
 		global InitialBallSpeedX
 		global InitialBallSpeedY
 		ballspeed = [InitialBallSpeedX, InitialBallSpeedY]
+		Ballc.StartSpeed()
+		
 		
 def PauseGame():
 	global pause
@@ -145,7 +157,7 @@ def PauseGame():
 	temp = ballspeed[1]
 	ballspeed[1] = notballspeed[1]
 	notballspeed[1] = temp
-	print pause	
+	#print pause	
 	
 		
 def movepaddle():
@@ -164,42 +176,59 @@ def movepaddle():
 		
 		
 	
-def process_collision(Ball, Other):
+def process_collision(Mover, Other):
 	global ballspeed
+	global Paddle1c
+	global Paddle2c
+	global Ballc
 	x = ballspeed[0]
 	y = ballspeed[1]
 	
-	if Other == Paddle1:
+	if Mover == Ball:
+			
+		if Other == Paddle1:
 		#print "Paddle"
-		ballspeed = [abs(x),y]
-	if Other == Paddle2:
-		ballspeed = [-(abs(x)),y]
-	if Other == WallTop:
-		ballspeed = [x,abs(y)]
-	if Other == WallBottom:
-		ballspeed = [x, -(abs(y))]
-	if Other == WallLeft or Other == WallRight:
-		global pause
-		global notpause
-		global EndGame
-		pause = 1
-		notpause = 1
-		ballspeed = [0,0]
-		EndGame = 1
-		
+			ballspeed = [abs(x),y]
+		if Other == Paddle2:
+			ballspeed = [-(abs(x)),y]
+		if Other == WallTop:
+			ballspeed = [x,abs(y)]
+		if Other == WallBottom:
+			ballspeed = [x, -(abs(y))]
+		if Other == WallLeft or Other == WallRight:
+			global pause
+			global notpause
+			global EndGame
+			if EndGame == 0:
+				if Other ==WallLeft:
+					print "Player 2 Wins!"
+				else:
+					print "Player 1 Wins!"
+			pause = 1
+			notpause = 1
+			ballspeed = [0,0]
+			EndGame = 1
+			
+	if Mover == Paddle1:
+		if Other == WallTop:
+			Paddle1c.moveup = 0
 		
 
 
 
 def moveBall():
+	global Ballc
 	#print ballspeed
-	w.move(Ball, ballspeed[0],ballspeed[1])
+	w.move(Ballc.obj, ballspeed[0],ballspeed[1])
 	Root.after(20, moveBall)
 
 
 
 
 def checkcollision():
+	global Ballc
+	global Paddle1c
+	global Paddle2c
 	bbBall = w.bbox(Ball)
 	for objid in w.find_overlapping(bbBall[0], bbBall[1], bbBall[2], bbBall[3]):
 		if objid != Ball: 
@@ -208,7 +237,7 @@ def checkcollision():
 
 
 def RestartGame():
-	print "Restarting Game"
+	#print "Restarting Game"
 	global Start
 	global pause
 	global notpause
@@ -218,7 +247,7 @@ def RestartGame():
 	global Ball
 	global Paddle1
 	global Paddle2
-	
+	global centerofpaddle
 	EndGame = 0
 	Start = 0
 	pause = 0
@@ -226,8 +255,9 @@ def RestartGame():
 	notballspeed = [0,0]
 	ballspeed = [0,0]
 	w.coords(Paddle1, 5, 35, 30, 115)
-	w.coords(Paddle2, CanvasWidth,CanvasHeight-165, CanvasWidth-25, CanvasHeight-85)
-	w.coords(Ball, 30+1+1,(35+115)/2-10+1,30+20+1,(35+115)/2+10+1)
+	w.coords(Paddle2c.obj,CanvasWidth, CanvasHeight-50, CanvasWidth-Paddle2c.paddlewidth, CanvasHeight-50-Paddle2c.paddleheight)
+	#w.coords(Ballc.obj, 30+1+1,(35+115)/2-10+1,30+20+1,(35+115)/2+10+1)
+	w.coords(Ballc.obj, 6+Paddle1c.paddlewidth,centerofpaddle-Ballc.radius,6+Paddle1c.paddlewidth+(2*Ballc.radius),centerofpaddle+Ballc.radius)
 	
 	
 	
@@ -266,7 +296,7 @@ InFile = open(argo, "r")
 Arr = []
 for line in InFile:
 	arrr = []
-	print line
+	#print line
 	
 	line = line.split(":")
 	Cato[line[0]] = int(line[1])
@@ -282,6 +312,9 @@ CanvasWidth = Cato.get("CanvasWidth")
 CanvasHeight = Cato.get("CanvasHeight")
 MaxBallSpeed = Cato.get("MaxBallSpeed")
 MinBallSpeed = Cato.get("MinBallSpeed")
+
+
+
 
 Paddle1c = Paddlec(1,25,80,PaddleSpeed)
 Paddle2c = Paddlec(2,25,80,PaddleSpeed)
@@ -332,12 +365,20 @@ WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 Paddle1 = w.create_rectangle(5, 35, 5+Paddle1c.paddlewidth, 35+Paddle1c.paddleheight, fill="white")
 Paddle2 = w.create_rectangle(CanvasWidth, CanvasHeight-50, CanvasWidth-Paddle2c.paddlewidth, CanvasHeight-50-Paddle2c.paddleheight, fill="white")
 
-bbPaddle1 = w.bbox(Paddle1)
-bbPaddle2 = w.bbox(Paddle2)
-centerofpaddle = (35+35+Paddle1c.paddleheight)/2
 
+
+centerofpaddle = (35+35+Paddle1c.paddleheight)/2
 Ball = w.create_oval(6+Paddle1c.paddlewidth,centerofpaddle-Ballc.radius,6+Paddle1c.paddlewidth+(2*Ballc.radius),centerofpaddle+Ballc.radius, fill="white")
-bbBall = w.bbox(Ball)
+
+
+
+Ballc.InputObject(Ball)
+Paddle1c.InputObject(Paddle1)
+Paddle2c.InputObject(Paddle2)
+
+
+bbBall = w.bbox(Ballc.obj)
+
 
 
 
