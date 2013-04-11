@@ -41,21 +41,23 @@ ballspeed = [0,0]
 
 def handle_key_event(event):
 	global EndGame
+	global pause
 	global Paddle1c
 	global Paddle2c
 	#print event.keysym
 	
-	
-	if event.char == "w":
-		Paddle1c.startmoveup()
-	if event.char == "s":
-		Paddle1c.startmovedown()
-		
-	if event.keysym == "Up":
-		Paddle2c.startmoveup()
-	if event.keysym == "Down":
-		Paddle2c.startmovedown()
-		
+	if EndGame == 0 and pause == 0:
+		if event.char == "w":
+			Paddle1c.startmoveup()
+		if event.char == "s":
+			Paddle1c.startmovedown()
+			
+		if event.keysym == "Up":
+			Paddle2c.startmoveup()
+		if event.keysym == "Down":
+			Paddle2c.startmovedown()
+	else:
+		FreezePaddles()
 		
 	if event.char == "p":
 		PauseGame()
@@ -64,7 +66,17 @@ def handle_key_event(event):
 	if event.keysym == "Return":
 		if EndGame == 1:
 			RestartGame()
-			
+
+def FreezePaddles():
+	global Paddle1c
+	global Paddle2c
+	Paddle1c.endmoveup()
+	Paddle1c.endmovedown()
+	Paddle2c.endmovedown()
+	Paddle2c.endmoveup()
+	
+	
+	
 def handle_key_release_event(event):
 	#print event.keysym
 	global EndGame
@@ -104,6 +116,9 @@ def PauseGame():
 	temp = pause
 	pause = notpause
 	notpause = temp	
+	if pause == 1:
+		FreezePaddles()
+	
 	Ballc.FlipSpeeds()
 	
 		
@@ -153,7 +168,7 @@ def process_collision(Mover, Other):
 			global notpause
 			global EndGame
 			if EndGame == 0:
-				if Other ==WallLeft:
+				if Other == WallLeft:
 					print "Player 2 Wins!"
 				else:
 					print "Player 1 Wins!"
@@ -162,6 +177,7 @@ def process_collision(Mover, Other):
 			ballspeed = [0,0]
 			Ballc.CSpeed = [0,0]
 			EndGame = 1
+			FreezePaddles()
 			
 	if Mover == Paddle1c.obj:
 		if Other == WallTop:
