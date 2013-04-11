@@ -5,4 +5,4 @@ BallRadius: 50
 CanvasWidth: 900
 CanvasHeight: 900
 MaxBallSpeed: 10
-MinBallSpeed: 10
+MinBallSpeed: 2
