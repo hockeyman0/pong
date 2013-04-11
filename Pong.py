@@ -55,9 +55,10 @@ def handle_key_event(event):
 		Paddle2c.startmoveup()
 	if event.keysym == "Down":
 			Paddle2c.startmovedown()
-
-	if event.char == "p":
-		PauseGame()
+	if Start == 1:
+		
+		if event.char == "p":
+			PauseGame()
 	if event.keysym == "space":
 		StartGame()
 	if event.keysym == "Return":
