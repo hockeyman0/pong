@@ -46,19 +46,16 @@ def handle_key_event(event):
 	global Paddle2c
 	#print event.keysym
 	
-	if EndGame == 0 and pause == 0:
-		if event.char == "w":
-			Paddle1c.startmoveup()
-		if event.char == "s":
-			Paddle1c.startmovedown()
-			
-		if event.keysym == "Up":
-			Paddle2c.startmoveup()
-		if event.keysym == "Down":
-			Paddle2c.startmovedown()
-	else:
-		FreezePaddles()
+	if event.char == "w":
+		Paddle1c.startmoveup()
+	if event.char == "s":
+		Paddle1c.startmovedown()
 		
+	if event.keysym == "Up":
+		Paddle2c.startmoveup()
+	if event.keysym == "Down":
+			Paddle2c.startmovedown()
+
 	if event.char == "p":
 		PauseGame()
 	if event.keysym == "space":
@@ -116,8 +113,6 @@ def PauseGame():
 	temp = pause
 	pause = notpause
 	notpause = temp	
-	if pause == 1:
-		FreezePaddles()
 	
 	Ballc.FlipSpeeds()
 	
@@ -127,17 +122,20 @@ def movepaddle():
 	global Paddle2c
 	global Start
 	global Starter
+	global pause
+	global EndGame
 	move1 = Paddle1c.moveup + Paddle1c.movedown
 	move2 = Paddle2c.moveup + Paddle2c.movedown
-	w.move(Paddle1, 0, move1)
-	w.move(Paddle2, 0, move2)
-	Root.after(20, movepaddle)
+	if EndGame == 0 and pause == 0:
+		
+		w.move(Paddle1, 0, move1)
+		w.move(Paddle2, 0, move2)
 	if Start == 0:
 		if Starter == 0:
 			w.move(Ball, 0, move1)
 		else:
 			w.move(Ball, 0, move2)
-		
+	Root.after(20, movepaddle)
 		
 		
 		
@@ -332,10 +330,6 @@ Root = Tk()
 
 
 
-# MOST OF THIS WILL BE PUT INTO THE CONFIGURATION FILE
-
-
-
 Restart_Button = Button(Root, text="Restart", command = RestartGame)#command=Print_Message)
 Restart_Button.grid(row=0, column=0,columnspan =2, sticky = W)
 
@@ -348,10 +342,13 @@ Exit_Button.grid(row=0, column=4, sticky=E)
 
 
 w = Canvas(Root, width=CanvasWidth, height=CanvasHeight) 
-
-
-
 w.grid(row=1, column=0, columnspan=5, sticky = S)
+
+
+
+
+
+
 
 
 WallLeft = w.create_line(5,0,5,CanvasHeight, fill="white")
@@ -360,29 +357,32 @@ WallTop = w.create_line(0,5,CanvasWidth,5,fill="white")
 WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 
 
+
+
+
 GameBoard = Board(CanvasWidth, CanvasHeight, WallLeft, WallTop,WallRight,WallBottom)
+
+
 
 
 
 Paddle1 = w.create_rectangle(Paddle1c.coords[0], Paddle1c.coords[1], Paddle1c.coords[2], Paddle1c.coords[3], fill="white")
 Paddle2 = w.create_rectangle(Paddle2c.coords[0], Paddle2c.coords[1], Paddle2c.coords[2], Paddle2c.coords[3], fill="white")
 
-
-
-centerofpaddle = (35+35+Paddle1c.height)/2
-#Ball = w.create_oval(6+Paddle1c.width,centerofpaddle-Ballc.radius,6+Paddle1c.width+(2*Ballc.radius),centerofpaddle+Ballc.radius, fill="white")
 Ball = w.create_oval(0,0,(2*Ballc.radius),(2*Ballc.radius), fill="white")
 Ballc.InputObject(Ball)
 
-
-
-#w.coords(Ball,6+Paddle1c.width,centerofpaddle-Ballc.radius,6+Paddle1c.width+(2*Ballc.radius),centerofpaddle+Ballc.radius)
 Ballc.InputCoords([Paddle1c.coords[2]+2, Paddle1c.middle()-Ballc.radius, Paddle1c.coords[2]+(2*Ballc.radius)+2,Paddle1c.middle()+Ballc.radius],[Paddle2c.coords[2]-(2*Ballc.radius)-2,Paddle2c.middle()-Ballc.radius,Paddle2c.coords[2]-2,Paddle2c.middle()+Ballc.radius]) 
-#w.coords(Ballc.obj, Ballc.startpos[1][0], Ballc.startpos[1][1], Ballc.startpos[1][2], Ballc.startpos[1][3])
+
+
 Ballc.restartpos(w, Starter)
+
+
 
 Paddle1c.InputObject(Paddle1)
 Paddle2c.InputObject(Paddle2)
+
+
 
 
 bbBall = w.bbox(Ballc.obj)
