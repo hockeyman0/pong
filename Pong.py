@@ -168,9 +168,9 @@ def process_collision(Mover, Other):
 			global EndGame
 			if EndGame == 0:
 				if Other == WallLeft:
-					print "Player 2 Wins!"
+					print "Player 2 Wins! Press Enter to Restart."
 				else:
-					print "Player 1 Wins!"
+					print "Player 1 Wins! Press Enter to Restart."
 			pause = 1
 			notpause = 1
 			ballspeed = [0,0]
@@ -222,7 +222,7 @@ def checkcollision():
 	for objid in w.find_overlapping(bbPaddle2[0], bbPaddle2[1], bbPaddle2[2], bbPaddle2[3]):
 		if objid != Paddle2c.obj and objid != GameBoard.WallRight: 
 			process_collision(Paddle2c.obj , objid)
-	Root.after(5, checkcollision)
+	Root.after(20, checkcollision)
 
 
 
@@ -397,7 +397,7 @@ Root.bind("<KeyRelease>", handle_key_release_event)
 
 
 
-Root.after(5, checkcollision)
+Root.after(20, checkcollision)
 Root.after(20, moveBall)
 Root.after(20, movepaddle)
 Root.mainloop()
