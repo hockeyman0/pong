@@ -16,15 +16,21 @@ import os
 import re
 import math
 import random
+import time
 from Tkinter import *
 from PongClasses import *
+import tkFileDialog
+import tkSimpleDialog
+
+GamePositions = []
 EndGame = 0
 Start = 0
 pause = 0
 notpause = 1
 notballspeed = [0,0]
 ballspeed = [0,0]
-
+Score1 = 0
+Score2 = 0
 		
 
 #DEFINED FUNCTIONS######
@@ -36,169 +42,6 @@ ballspeed = [0,0]
 ##################################################################
 ##################################################################
 ##################################################################
-
-
-
-def handle_key_event(event):
-	global EndGame
-	global pause
-	global Paddle1c
-	global Paddle2c
-	#print event.keysym
-	
-	if event.char == "w":
-		Paddle1c.startmoveup()
-	if event.char == "s":
-		Paddle1c.startmovedown()
-		
-	if event.keysym == "Up":
-		Paddle2c.startmoveup()
-	if event.keysym == "Down":
-			Paddle2c.startmovedown()
-	if Start == 1:
-		
-		if event.char == "p":
-			PauseGame()
-	if event.keysym == "space":
-		StartGame()
-	if event.keysym == "Return":
-		if EndGame == 1:
-			RestartGame()
-
-def FreezePaddles():
-	global Paddle1c
-	global Paddle2c
-	Paddle1c.endmoveup()
-	Paddle1c.endmovedown()
-	Paddle2c.endmovedown()
-	Paddle2c.endmoveup()
-	
-	
-	
-def handle_key_release_event(event):
-	#print event.keysym
-	global EndGame
-	global Paddle1c
-	global Paddle2c
-	if event.char == "w":
-		Paddle1c.endmoveup()
-	if event.char == "s":
-		Paddle1c.endmovedown()
-		
-	if event.keysym == "Up":
-		Paddle2c.endmoveup()
-	if event.keysym == "Down":
-		Paddle2c.endmovedown()
-			
-		
-		
-def StartGame():
-	global Start
-	global Ballc
-	global Starter
-	if Start == 0:
-		Start = 1
-		global ballspeed
-		global InitialBallSpeedX
-		global InitialBallSpeedY
-		Ballc.StartSpeed()
-		if Starter == 0:
-			Ballc.CSpeed[0] = abs(Ballc.CSpeed[0])
-		else:
-			Ballc.CSpeed[0] = -(abs(Ballc.CSpeed[0]))
-		
-		
-def PauseGame():
-	global pause
-	global notpause
-	temp = pause
-	pause = notpause
-	notpause = temp	
-	
-	Ballc.FlipSpeeds()
-	
-		
-def movepaddle():
-	global Paddle1c
-	global Paddle2c
-	global Start
-	global Starter
-	global pause
-	global EndGame
-	move1 = Paddle1c.moveup + Paddle1c.movedown
-	move2 = Paddle2c.moveup + Paddle2c.movedown
-	if EndGame == 0 and pause == 0:
-		
-		w.move(Paddle1, 0, move1)
-		w.move(Paddle2, 0, move2)
-	if Start == 0:
-		if Starter == 0:
-			w.move(Ball, 0, move1)
-		else:
-			w.move(Ball, 0, move2)
-	Root.after(20, movepaddle)
-		
-		
-		
-	
-def process_collision(Mover, Other):
-	global Paddle1c
-	global Paddle2c
-	global Ballc
-	global GameBoard
-
-	if Mover == Ball:
-		Ballc.ChangeSpeed()
-		x = Ballc.CSpeed[0]
-		y = Ballc.CSpeed[1]
-		if Other == Paddle1:
-		#print "Paddle"
-			Ballc.CSpeed = [abs(x),y]
-		if Other == Paddle2:
-			Ballc.CSpeed = [-(abs(x)),y]
-		if Other == WallTop:
-			Ballc.CSpeed = [x,abs(y)]
-		if Other == WallBottom:
-			Ballc.CSpeed = [x,-(abs(y))]
-			
-			
-		if Other == WallLeft or Other == WallRight:
-			global pause
-			global notpause
-			global EndGame
-			if EndGame == 0:
-				if Other == WallLeft:
-					print "Player 2 Wins! Press Enter to Restart."
-				else:
-					print "Player 1 Wins! Press Enter to Restart."
-			pause = 1
-			notpause = 1
-			ballspeed = [0,0]
-			Ballc.CSpeed = [0,0]
-			EndGame = 1
-			FreezePaddles()
-			
-	if Mover == Paddle1c.obj:
-		if Other == WallTop:
-			Paddle1c.moveup = 0
-		if Other == WallBottom:
-			Paddle1c.movedown = 0
-	
-	if Mover == Paddle2c.obj:
-		if Other == GameBoard.WallTop:
-			Paddle2c.moveup = 0
-		if Other == GameBoard.WallBottom:
-			Paddle2c.movedown = 0
-		
-
-
-
-def moveBall():
-	global Ballc
-	w.move(Ballc.obj, Ballc.CSpeed[0], Ballc.CSpeed[1])
-	Root.after(20, moveBall)
-
-
 
 
 def checkcollision():
@@ -228,6 +71,192 @@ def checkcollision():
 
 
 
+def FreezePaddles():
+	global Paddle1c
+	global Paddle2c
+	Paddle1c.endmoveup()
+	Paddle1c.endmovedown()
+	Paddle2c.endmovedown()
+	Paddle2c.endmoveup()
+	
+	
+def handle_key_event(event):
+	global EndGame
+	global pause
+	global Paddle1c
+	global Paddle2c
+	#print event.keysym
+	
+	if event.char == "w":
+		Paddle1c.startmoveup()
+	if event.char == "s":
+		Paddle1c.startmovedown()
+		
+	if event.keysym == "Up":
+		Paddle2c.startmoveup()
+	if event.keysym == "Down":
+			Paddle2c.startmovedown()
+	if Start == 1:
+		
+		if event.char == "p":
+			PauseGame()
+	if event.keysym == "space":
+		StartGame()
+	if event.keysym == "Return":
+		if EndGame == 1:
+			RestartGame()
+
+	
+	
+	
+def handle_key_release_event(event):
+	#print event.keysym
+	global EndGame
+	global Paddle1c
+	global Paddle2c
+	if event.char == "w":
+		Paddle1c.endmoveup()
+	if event.char == "s":
+		Paddle1c.endmovedown()
+		
+	if event.keysym == "Up":
+		Paddle2c.endmoveup()
+	if event.keysym == "Down":
+		Paddle2c.endmovedown()
+		
+
+def moveBall():
+	global Ballc
+	w.move(Ballc.obj, Ballc.CSpeed[0], Ballc.CSpeed[1])
+	Root.after(20, moveBall)
+
+		
+			
+		
+def movepaddle():
+	global Paddle1c
+	global Paddle2c
+	global Start
+	global Starter
+	global pause
+	global EndGame
+	move1 = Paddle1c.moveup + Paddle1c.movedown
+	move2 = Paddle2c.moveup + Paddle2c.movedown
+	if EndGame == 0 and pause == 0:
+		
+		w.move(Paddle1, 0, move1)
+		w.move(Paddle2, 0, move2)
+	if Start == 0:
+		if Starter == 0:
+			w.move(Ball, 0, move1)
+		else:
+			w.move(Ball, 0, move2)
+	Root.after(20, movepaddle)
+		
+		
+		
+			
+				
+		
+def PauseGame():
+	global pause
+	global notpause
+	temp = pause
+	pause = notpause
+	notpause = temp	
+	
+	Ballc.FlipSpeeds()
+	
+	
+	
+
+def process_collision(Mover, Other):
+	global Paddle1c
+	global Paddle2c
+	global Ballc
+	global GameBoard
+	global GamePositions
+
+	if Mover == Ball:
+		Ballc.ChangeSpeed()
+		x = Ballc.CSpeed[0]
+		y = Ballc.CSpeed[1]
+		if Other == Paddle1:
+		#print "Paddle"
+			Ballc.CSpeed = [abs(x),y]
+		if Other == Paddle2:
+			Ballc.CSpeed = [-(abs(x)),y]
+		if Other == WallTop:
+			Ballc.CSpeed = [x,abs(y)]
+		if Other == WallBottom:
+			Ballc.CSpeed = [x,-(abs(y))]
+			
+			
+		if Other == WallLeft or Other == WallRight:
+			global pause
+			global notpause
+			global EndGame
+			global GameBoard
+			if EndGame == 0:
+				localtime = time.localtime(time.time())
+				print localtime
+				print GamePositions
+				if Other == WallLeft:
+					#ScoreBoard[1] = ScoreBoard[1] + 1
+					GameBoard.UpdateScore(1)
+					print "Player 2 Wins! Press Enter to Restart."
+				else:
+					#ScoreBoard[0] = ScoreBoard[0] + 1
+					GameBoard.UpdateScore(0)
+					print "Player 1 Wins! Press Enter to Restart."
+			pause = 1
+			notpause = 1
+			ballspeed = [0,0]
+			Ballc.CSpeed = [0,0]
+			EndGame = 1
+			FreezePaddles()
+			
+			
+	if Mover == Paddle1c.obj:
+		if Other == WallTop:
+			Paddle1c.moveup = 0
+		if Other == WallBottom:
+			Paddle1c.movedown = 0
+	
+	if Mover == Paddle2c.obj:
+		if Other == GameBoard.WallTop:
+			Paddle2c.moveup = 0
+		if Other == GameBoard.WallBottom:
+			Paddle2c.movedown = 0
+		
+
+def RecordPositions():
+	global Start
+	global EndGame
+	global GamePositions
+	global Paddle1c
+	global Paddle2c
+	global Ballc
+	
+	if Start == 1 and EndGame == 0:
+		
+		CurrentPositions = ""
+		part = []
+	
+		bbox = w.bbox(Paddle1c.obj)
+		part.append(bbox)
+		bbox = w.bbox(Paddle2c.obj)
+		part.append(bbox)
+		bbox = w.bbox(Ballc.obj)
+		part.append(bbox)
+		for tempbbox in part:
+			CurrentPositions += "%d,%d,%d,%d:" % (tempbbox[0], tempbbox[1], tempbbox[2], tempbbox[3])
+		GamePositions.append(CurrentPositions)
+	Root.after(20, RecordPositions)
+
+
+
+
 
 def RestartGame():
 	#print "Restarting Game"
@@ -239,6 +268,9 @@ def RestartGame():
 	global Paddle2c
 	global Ballc
 	global Starter
+	global GamePositions
+	
+	GamePositions = []
 	EndGame = 0
 	Start = 0
 	pause = 0
@@ -251,8 +283,59 @@ def RestartGame():
 	Ballc.restartpos(w, Starter)
 	
 	
+def SaveGame():
+	global EndGame
+	global GamePositions
+	if EndGame == 1:
+		savetime = time.localtime(time.time())
+		default = ""
+		default += "Saved Game "
+		default += str(savetime[0])
+		default += "-"
+		default += str(savetime[1])
+		default += "-"
+		default += str(savetime[2])
+		default += " at "
+		default += str(savetime[3])
+		default += "."
+		default += str(savetime[4])
+		default += "."
+		default += str(savetime[5])
+		default += "."
+		default += str(savetime[6])
+	
+		filename = tkSimpleDialog.askstring("Text Input Box","Name for file? (default date/time)")
+		if filename == "" :
+			filename = default
+		filename += ".save"
+		OutFile = open(filename, "w+")
+		for snapshot in GamePositions:
+			OutFile.write(snapshot)
+	else:
+		print "Wait until the end of a game to save replay!"
 	
 	
+def StartGame():
+	global Start
+	global Ballc
+	global Starter
+	if Start == 0:
+		Start = 1
+		global ballspeed
+		global InitialBallSpeedX
+		global InitialBallSpeedY
+		Ballc.StartSpeed()
+		if Starter == 0:
+			Ballc.CSpeed[0] = abs(Ballc.CSpeed[0])
+		else:
+			Ballc.CSpeed[0] = -(abs(Ballc.CSpeed[0]))
+
+
+
+
+
+
+
 	
 	
 	
@@ -270,7 +353,9 @@ def RestartGame():
 
 
 
-
+#localtime = time.localtime(time.time())
+#print "Local current time:", localtime
+#print localtime[1]
 
 
 
@@ -326,24 +411,36 @@ Root = Tk()
 
 
 
+#testvar = StringVar()
+#testvar.set(str(Starter))
+
 
 
 
 
 
 Restart_Button = Button(Root, text="Restart", command = RestartGame)#command=Print_Message)
-Restart_Button.grid(row=0, column=0,columnspan =2, sticky = W)
+Restart_Button.grid(row=0, column=1)
 
 Pause_Button = Button(Root, text="Pause", command=PauseGame)#command=Print_Message)
-Pause_Button.grid(row=0, column=1, sticky = W)
+Pause_Button.grid(row=0, column=2, sticky = W)
 
 
 Exit_Button = Button(Root, text="Exit", command=Root.quit)
-Exit_Button.grid(row=0, column=4, sticky=E)
+Exit_Button.grid(row=0, column=3, sticky=E)
+
+Save_Button = Button(Root, text="Save Recording", command=SaveGame)
+Save_Button.grid(row=3, column=3)
+
+
 
 
 w = Canvas(Root, width=CanvasWidth, height=CanvasHeight) 
 w.grid(row=1, column=0, columnspan=5, sticky = S)
+
+
+
+
 
 
 
@@ -357,11 +454,26 @@ WallRight = w.create_line(CanvasWidth,0,CanvasWidth,CanvasHeight, fill="white")
 WallTop = w.create_line(0,5,CanvasWidth,5,fill="white")
 WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 
-
+#PredictorWallLeft = This will go just infront of the left paddle's right edge used for AI prediction 
+#PredictorWallRight = this will do the same but for the right paddle
 
 
 
 GameBoard = Board(CanvasWidth, CanvasHeight, WallLeft, WallTop,WallRight,WallBottom)
+
+
+
+#PLAYER SCORE BOARD DISPLAY NEEDS TO BE AFTER BOARD INITIALIZATION
+Player1_Score = Label(Root, textvariable= GameBoard.Score1String)
+Player1_Score.grid(row=0, column=0, sticky = W)
+Player2_Score = Label(Root, textvariable = GameBoard.Score2String)
+Player2_Score.grid(row=0, column=4, sticky = E)
+
+
+
+
+
+
 
 
 
@@ -400,7 +512,33 @@ Root.bind("<KeyRelease>", handle_key_release_event)
 Root.after(20, checkcollision)
 Root.after(20, moveBall)
 Root.after(20, movepaddle)
+Root.after(20, RecordPositions)
 Root.mainloop()
+
+
+
+#CHECK LIST
+#Scoreboard updates-check
+#move pause button-
+#move exit button
+#move restart button
+#Add Game Mode toggle button
+#Add player vs player/cpu button
+#add load recording button
+#add save recording button
+# Game Records every action in a game - Check
+# Game loads a game
+# Game Saves every action in a game to a file - check
+
+
+
+
+
+
+
+
+
+
 
 
 #All Rights Reserved 2013

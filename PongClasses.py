@@ -16,6 +16,7 @@ import os
 import re
 import math
 import random
+from Tkinter import *
 class Ballc:
 	def __init__(self, ISpeedX, ISpeedY, radius, min, max):
 		self.ISpeed = [ISpeedX, ISpeedY]
@@ -113,5 +114,14 @@ class Board:
 		self.WallTop = WallTop
 		self.WallRight = WallRight
 		self.WallBottom = WallBottom
+		self.ScoreBoard = [0,0]
+		self.Score1String = StringVar()
+		self.Score2String = StringVar()
+		self.Score1String.set(str(self.ScoreBoard[0]))
+		self.Score2String.set(str(self.ScoreBoard[1]))
 		
 		
+	def UpdateScore(self, Pl):
+		self.ScoreBoard[Pl] = self.ScoreBoard[Pl] + 1
+		self.Score1String.set(str(self.ScoreBoard[0]))
+		self.Score2String.set(str(self.ScoreBoard[1]))
