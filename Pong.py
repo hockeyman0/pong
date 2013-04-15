@@ -17,6 +17,8 @@ import re
 import math
 import random
 import time
+import commands
+import string
 from Tkinter import *
 from PongClasses import *
 import tkFileDialog
@@ -31,7 +33,14 @@ notballspeed = [0,0]
 ballspeed = [0,0]
 Score1 = 0
 Score2 = 0
-		
+ReplayOn = 0
+P1Replay = []
+P2Replay = []
+BReplay = []
+counter = 0
+Ncounter = 0
+File_Name = ""
+
 
 #DEFINED FUNCTIONS######
 ##################################################################
@@ -80,6 +89,11 @@ def FreezePaddles():
 	Paddle2c.endmoveup()
 	
 	
+	
+def GameModeSelection():
+	global Game	
+	
+	
 def handle_key_event(event):
 	global EndGame
 	global pause
@@ -123,6 +137,84 @@ def handle_key_release_event(event):
 		Paddle2c.endmoveup()
 	if event.keysym == "Down":
 		Paddle2c.endmovedown()
+
+def Handle_List_Extraction(event):
+	global File_Name
+	Index = Top.Selection_List.curselection()
+	File_Name = Top.Selection_List.get(Index)
+	Top.destroy()
+
+
+
+def LoadGame():
+	global File_Name
+	global Paddle1c
+	global Paddle2c
+	global Ballc
+	global ReplayOn
+	global P1Replay
+	global P2Replay
+	global BReplay
+	global counter
+	global Ncounter
+	Select_A_File()
+	InFile = open(File_Name, "r")
+	for line in InFile:
+		#print line
+		line = line.split(":")
+		PaddlePos1 = line[0]
+		PaddlePos2 = line[1]
+		BallPos = line[2]
+		
+		PaddlePos1 = PaddlePos1.split(",")
+		PaddlePos2 = PaddlePos2.split(",")
+		BallPos = BallPos.split(",")
+		#print "loop"
+		#print PaddlePos1
+		P1Replay.append(PaddlePos1)
+		P2Replay.append(PaddlePos2)
+		BReplay.append(BallPos)
+		#w.coords(Paddle1c.obj, int(PaddlePos1[0]),int(PaddlePos1[1]),int(PaddlePos1[2]),int(PaddlePos1[3]))
+		#w.coords(Paddle2c.obj, PaddlePos2[0],PaddlePos2[1],PaddlePos2[2],PaddlePos2[3])
+		#w.coords(Ballc.obj, BallPos[0],BallPos[1],BallPos[2],BallPos[3])
+		#time.sleep(0.2)
+	EndGame = 1
+	Ncounter = len(P1Replay)
+	#print Ncounter
+	Root.after(20, ReplayGame)
+	conuter = 0
+	time.sleep(1)
+	RestartGame()
+
+def ReplayGame():
+	global EndGame
+	global P1Replay
+	global P2Replay
+	global BReplay
+	global counter
+	global Ncounter
+	global Paddlec1
+	global Paddlec2
+	global Ballc
+	EndGame = 1
+	i = counter
+	w.coords(Paddle1c.obj, int(P1Replay[i][0]),int(P1Replay[i][1]),int(P1Replay[i][2]),int(P1Replay[i][3]))
+	w.coords(Paddle2c.obj, P2Replay[i][0],P2Replay[i][1],P2Replay[i][2],P2Replay[i][3])
+	w.coords(Ballc.obj, BReplay[i][0],BReplay[i][1],BReplay[i][2],BReplay[i][3])
+	
+	counter = counter +1
+	
+	#print Ncounter
+	if counter < Ncounter:
+		#pass
+		#print "OH?"
+		Root.after(20, ReplayGame)
+	
+
+
+
+	
+
 		
 
 def moveBall():
@@ -199,8 +291,8 @@ def process_collision(Mover, Other):
 			global GameBoard
 			if EndGame == 0:
 				localtime = time.localtime(time.time())
-				print localtime
-				print GamePositions
+				#print localtime
+				#print GamePositions
 				if Other == WallLeft:
 					#ScoreBoard[1] = ScoreBoard[1] + 1
 					GameBoard.UpdateScore(1)
@@ -311,8 +403,39 @@ def SaveGame():
 		OutFile = open(filename, "w+")
 		for snapshot in GamePositions:
 			OutFile.write(snapshot)
+			OutFile.write("\n")
 	else:
 		print "Wait until the end of a game to save replay!"
+
+
+			
+def Select_A_File():
+	global Top
+	Top = Toplevel()
+	HS_Bar = Scrollbar(Top, orient=HORIZONTAL)
+	HS_Bar.pack(side=BOTTOM, fill=X)
+
+	VS_Bar = Scrollbar(Top)
+	VS_Bar.pack(side=RIGHT, fill=Y)
+
+	List = Listbox(Top, relief=SUNKEN,font=("Helvetica", 20),fg="Black", bg="White",selectforeground="White",selectbackground="Blue",cursor="arrow", yscrollcommand=VS_Bar.set, xscrollcommand=HS_Bar.set)
+
+	HS_Bar.config(command=List.xview)
+	VS_Bar.config(command=List.yview)
+	List.pack(side=LEFT, expand=YES, fill=BOTH)
+
+	Entries=commands.getoutput("ls *.save")
+	Entries=string.split(Entries,"\n")
+	for Item in Entries:
+		List.insert(END, Item)
+	Top.Selection_List = List
+	List.bind("<Double-1>", Handle_List_Extraction)
+
+	Top.focus_set()
+	Top.grab_set()
+	Top.wait_window()
+	print File_Name 
+
 	
 	
 def StartGame():
@@ -432,8 +555,11 @@ Exit_Button.grid(row=0, column=3, sticky=E)
 Save_Button = Button(Root, text="Save Recording", command=SaveGame)
 Save_Button.grid(row=3, column=3)
 
+Load_Button = Button(Root, text="Load Recording", command=LoadGame)
+Load_Button.grid(row=3, column = 2)
 
-
+Mode_Button = Button(Root, text="Player vs. Player")
+Mode_Button.grid(row=3, column = 0)
 
 w = Canvas(Root, width=CanvasWidth, height=CanvasHeight) 
 w.grid(row=1, column=0, columnspan=5, sticky = S)
@@ -453,10 +579,6 @@ WallLeft = w.create_line(5,0,5,CanvasHeight, fill="white")
 WallRight = w.create_line(CanvasWidth,0,CanvasWidth,CanvasHeight, fill="white")
 WallTop = w.create_line(0,5,CanvasWidth,5,fill="white")
 WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
-
-#PredictorWallLeft = This will go just infront of the left paddle's right edge used for AI prediction 
-#PredictorWallRight = this will do the same but for the right paddle
-
 
 
 GameBoard = Board(CanvasWidth, CanvasHeight, WallLeft, WallTop,WallRight,WallBottom)
@@ -524,10 +646,10 @@ Root.mainloop()
 #move restart button
 #Add Game Mode toggle button
 #Add player vs player/cpu button
-#add load recording button
-#add save recording button
+#add load recording button -check 
+#add save recording button -check
 # Game Records every action in a game - Check
-# Game loads a game
+# Game loads a game -check
 # Game Saves every action in a game to a file - check
 
 
