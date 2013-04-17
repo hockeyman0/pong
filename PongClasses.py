@@ -79,6 +79,8 @@ class Paddlec:
 		self.height = paddleheight
 		self.width = paddlewidth
 		self.paddlespeed = paddlespeed
+		self.easypaddlespeed = paddlespeed/2.5
+		self.storedpaddlespeed = paddlespeed
 		self.moveup = 0
 		self.movedown = 0
 	def startmoveup(self):
@@ -103,7 +105,11 @@ class Paddlec:
 	
 	def restartpos(self, w):
 		w.coords(self.obj, self.coords[0],self.coords[1],self.coords[2], self.coords[3])
+	def ImportCanvas(self, w):
+		self.w = w
 		
+	def CurrentMiddle(self):
+		pass 
 		
 		
 class Board:
@@ -125,3 +131,28 @@ class Board:
 		self.ScoreBoard[Pl] = self.ScoreBoard[Pl] + 1
 		self.Score1String.set(str(self.ScoreBoard[0]))
 		self.Score2String.set(str(self.ScoreBoard[1]))
+
+
+class GameParameters:
+	def __init__(self):
+		self.EndGame = 0
+		self.Start = 0
+		self.pause = 0
+		self.Score1 = 0
+		self.Score2 = 0
+		self.ReplayOn = 0
+		self.counter = 0
+		self.ncounter = 0
+		self.GameMode = 0
+		self.PlayerMode = 0
+		
+		
+class AIProperties:
+	def __init__(self):
+		self.moving = 0 
+		
+		
+		
+		
+		
+		

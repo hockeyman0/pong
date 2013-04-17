@@ -29,8 +29,8 @@ EndGame = 0
 Start = 0
 pause = 0
 notpause = 1
-notballspeed = [0,0]
-ballspeed = [0,0]
+#notballspeed = [0,0]
+#ballspeed = [0,0]
 Score1 = 0
 Score2 = 0
 ReplayOn = 0
@@ -40,6 +40,7 @@ BReplay = []
 counter = 0
 Ncounter = 0
 File_Name = ""
+PlayerMode = 0
 
 
 #DEFINED FUNCTIONS######
@@ -60,6 +61,7 @@ def checkcollision():
 	global GameBoard
 	#global GameBoard
 	bbBall = w.bbox(Ballc.obj)
+	bbiBall = w.bbox(iBallc.obj)
 	bbPaddle1 = w.bbox(Paddle1c.obj)
 	bbPaddle2 = w.bbox(Paddle2c.obj)
 	#print "check"
@@ -74,6 +76,11 @@ def checkcollision():
 	for objid in w.find_overlapping(bbPaddle2[0], bbPaddle2[1], bbPaddle2[2], bbPaddle2[3]):
 		if objid != Paddle2c.obj and objid != GameBoard.WallRight: 
 			process_collision(Paddle2c.obj , objid)
+	for objid in w.find_overlapping(bbiBall[0], bbiBall[1], bbiBall[2], bbiBall[3]):
+			if objid != InvisaBall: 
+				#print "Contact"
+				process_collision(iBallc.obj , objid)
+
 	Root.after(20, checkcollision)
 
 
@@ -90,25 +97,37 @@ def FreezePaddles():
 	
 	
 	
-def GameModeSelection():
-	global Game	
-	
-	
+def PlayerModeSelection():
+	global PlayerMode
+	if Start == 0 or EndGame ==1:
+		if Player_Button["text"] == "Player vs. Player":
+			PlayerMode = 1
+		#print "yep"
+			Player_Button["text"] = "Player vs. Easy CPU"
+		elif Player_Button["text"] == "Player vs. Easy CPU":
+			PlayerMode = 2
+			Player_Button["text"] = "Player vs. Hard CPU"
+		elif Player_Button["text"] == "Player vs. Hard CPU":
+			PlayerMode = 0
+			Player_Button["text"] = "Player vs. Player"
+Space = 0	
 def handle_key_event(event):
 	global EndGame
 	global pause
 	global Paddle1c
 	global Paddle2c
+	global PlayerMode
+	global Space
 	#print event.keysym
 	
 	if event.char == "w":
 		Paddle1c.startmoveup()
 	if event.char == "s":
 		Paddle1c.startmovedown()
-		
-	if event.keysym == "Up":
-		Paddle2c.startmoveup()
-	if event.keysym == "Down":
+	if PlayerMode == 0:
+		if event.keysym == "Up":
+			Paddle2c.startmoveup()
+		if event.keysym == "Down":
 			Paddle2c.startmovedown()
 	if Start == 1:
 		
@@ -116,6 +135,7 @@ def handle_key_event(event):
 			PauseGame()
 	if event.keysym == "space":
 		StartGame()
+		Space = 1
 	if event.keysym == "Return":
 		if EndGame == 1:
 			RestartGame()
@@ -128,6 +148,7 @@ def handle_key_release_event(event):
 	global EndGame
 	global Paddle1c
 	global Paddle2c
+	global PlayerMode
 	if event.char == "w":
 		Paddle1c.endmoveup()
 	if event.char == "s":
@@ -137,6 +158,8 @@ def handle_key_release_event(event):
 		Paddle2c.endmoveup()
 	if event.keysym == "Down":
 		Paddle2c.endmovedown()
+	if event.keysym == "space":
+		Space = 0
 
 def Handle_List_Extraction(event):
 	global File_Name
@@ -219,7 +242,10 @@ def ReplayGame():
 
 def moveBall():
 	global Ballc
+	global iBallc
 	w.move(Ballc.obj, Ballc.CSpeed[0], Ballc.CSpeed[1])
+	iBallc.ChangeSpeed()
+	w.move(iBallc.obj, iBallc.CSpeed[0], iBallc.CSpeed[1])
 	Root.after(20, moveBall)
 
 		
@@ -238,7 +264,7 @@ def movepaddle():
 		
 		w.move(Paddle1, 0, move1)
 		w.move(Paddle2, 0, move2)
-	if Start == 0:
+	if Start == 0 and pause == 0:
 		if Starter == 0:
 			w.move(Ball, 0, move1)
 		else:
@@ -268,7 +294,8 @@ def process_collision(Mover, Other):
 	global Ballc
 	global GameBoard
 	global GamePositions
-
+	global PaddleTrigger
+	global AILocate
 	if Mover == Ball:
 		Ballc.ChangeSpeed()
 		x = Ballc.CSpeed[0]
@@ -277,7 +304,11 @@ def process_collision(Mover, Other):
 		#print "Paddle"
 			Ballc.CSpeed = [abs(x),y]
 		if Other == Paddle2:
+			PaddleTrigger = 1
 			Ballc.CSpeed = [-(abs(x)),y]
+			iBallc.CSpeed = [-(abs(x)),y]
+			iBallc.NCSpeed = [0,0]
+			iBallc.ChangeSpeed()
 		if Other == WallTop:
 			Ballc.CSpeed = [x,abs(y)]
 		if Other == WallBottom:
@@ -321,6 +352,27 @@ def process_collision(Mover, Other):
 		if Other == GameBoard.WallBottom:
 			Paddle2c.movedown = 0
 		
+			
+	if Mover == InvisaBall:
+			#iBallc.ChangeSpeed()
+			x = iBallc.CSpeed[0]
+			y = iBallc.CSpeed[1]
+			if Other == iWallLeft:
+			#print "Paddle"
+				iBallc.CSpeed = [abs(x),y]
+			if Other == iWallRight:
+				if AILocate == 0:
+					iBallc.FlipSpeeds()
+				AILocate = 1
+				
+				#iBallc.CSpeed = [-(abs(x)),y]
+			if Other == WallTop:
+				
+				iBallc.CSpeed = [x,abs(y)]
+			if Other == WallBottom:
+				iBallc.CSpeed = [x,-(abs(y))]
+
+AILocate = 0		
 
 def RecordPositions():
 	global Start
@@ -399,11 +451,12 @@ def SaveGame():
 		filename = tkSimpleDialog.askstring("Text Input Box","Name for file? (default date/time)")
 		if filename == "" :
 			filename = default
-		filename += ".save"
-		OutFile = open(filename, "w+")
-		for snapshot in GamePositions:
-			OutFile.write(snapshot)
-			OutFile.write("\n")
+		if filename != None:
+			filename += ".save"
+			OutFile = open(filename, "w+")
+			for snapshot in GamePositions:
+				OutFile.write(snapshot)
+				OutFile.write("\n")
 	else:
 		print "Wait until the end of a game to save replay!"
 
@@ -457,8 +510,159 @@ def StartGame():
 
 
 
+def ArtificialIntelligence():
+	global PlayerMode
+	global Paddle2c
+	#print PlayerMode
+	if PlayerMode == 0:
+		Paddle2c.paddlespeed = Paddle2c.storedpaddlespeed
+	elif PlayerMode == 1:
+		Paddle2c.paddlespeed = Paddle2c.easypaddlespeed
+		EasyAI()
+	elif PlayerMode == 2:
+		Paddle2c.paddlespeed = Paddle2c.storedpaddlespeed
+		HardAI()
+	Root.after(20, ArtificialIntelligence)
+	
+AIMoving = "Stop"	
+ReactionTime = 10
+ReactionTimeCounter = 0	
+
+	
+def EasyAI():
+	global Paddle1c
+	global Paddle2c
+	global Ballc
+	global AIMoving
+	global EndGame
+	global ReactionTime
+	global ReactionTimeCounter
+	if EndGame == 1:
+		AIMoving == "Stop"
+		Paddle2c.endmovedown()
+		Paddle2c.endmoveup()
+	PaddleBox = w.bbox(Paddle2c.obj)
+	#print PaddleBox
+	Center = (PaddleBox[1] + PaddleBox[3])/2
+	BallBox = w.bbox(Ballc.obj)
+	BallCenter = (BallBox[1] + BallBox[3])/2
+	#print AIMoving
+	#print Center
+	#print BallBox[1]
+	#print Paddle2c.moveup
+	#print Paddle2c.movedown
+	testing = (Paddle2c.moveup +Paddle2c.movedown)
+	#print testing
+	if (testing) == 0:
+		Paddle2c.endmovedown()
+		Paddle2c.endmoveup()
+		#print "YEAG"
+		AIMoving = "Stop"
+	#print AIMoving
+	if AIMoving == "Stop":
+		if ReactionTime == ReactionTimeCounter:
+			if BallBox[1] > Center:
+				Paddle2c.startmovedown()
+				AIMoving = "Down"
+			elif BallBox[3] < Center:
+				Paddle2c.startmoveup()
+				AIMoving = "Up"
+	else:
+		if AIMoving == "Down":
+			if Center >= BallCenter:
+				Paddle2c.endmovedown()
+				AIMoving = "Stop"
+		if AIMoving == "Up":
+			if Center <= BallCenter:
+				Paddle2c.endmoveup()
+				AIMoving = "Stop"
+		
+	if ReactionTime == ReactionTimeCounter:
+		ReactionTimeCounter = 0
+	else:
+		ReactionTimeCounter += 1
+		
+
+PaddleTrigger = 0
+P1Prev = [0,0,0,0]
+AIHardMoving = "Stop"
+DoubleCheck = 0 
 
 
+def HardAI():
+	global PaddleTrigger
+	global Ballc
+	global iBallc
+	global Start
+	global Game
+	global Starter
+	global Paddle1c
+	global P1Prev
+	global AILocate
+	#print AILocate
+	global AIHardMoving
+	global GameBoard
+	global Space
+	global DoubleCheck
+	global iBBSaveCenter
+	BallBox = w.bbox(Ballc.obj)
+	PaddleBox = w.bbox(Paddle1c.obj)
+	Paddle2Box = w.bbox(Paddle2c.obj)
+	#print iBallc.CSpeed
+	if PaddleTrigger == 1 or (Start == 0 and (PaddleBox != P1Prev)):
+		DoubleCheck = 0
+		w.coords(iBallc.obj, BallBox[0],BallBox[1],BallBox[2],BallBox[3])
+		AILocate = 0
+		Paddle2c.endmovedown()
+		Paddle2c.endmoveup()
+		AIHardMoving = "Stop"
+		PaddleTrigger = 0
+		#iBallc.FlipSpeeds()
+		if Start == 0 and Starter == 0:
+			iBallc.CSpeed = [abs(iBallc.ISpeed[0]), iBallc.ISpeed[1]]
+			iBallc.NCSpeed = [0,0]
+		if Start == 0 and Starter == 1:
+			iBallc.CSpeed = [-(abs(iBallc.ISpeed[0])), iBallc.ISpeed[1]]
+			iBallc.NCSpeed = [0,0]
+	iBBall = w.bbox(iBallc.obj)
+	iBCenter = (iBBall[1]+iBBall[3])/2
+	P2Center = (Paddle2Box[1]+Paddle2Box[3])/2	
+	#iBBSave = iBBall
+	if AILocate == 1 and (Starter == 0 or (Starter == 1 and Start == 1)):
+			if AIHardMoving == "Stop":
+			
+				Paddle2c.endmovedown()
+				Paddle2c.endmoveup()
+				iBBSave = iBBall
+				iBBSaveCenter = iBCenter
+				if iBCenter > P2Center:
+					Paddle2c.startmovedown()
+					AIHardMoving = "Down"
+				if iBCenter < P2Center:
+					Paddle2c.startmoveup()
+					AIHardMoving = "Up"
+			elif AIHardMoving == "Down":
+				if iBBSaveCenter <= P2Center:
+					AIHardMoving = "Stop"
+					Paddle2c.endmovedown()
+					DoubleCheck = 1
+					AILocate = 0
+			elif AIHardMoving == "Up":
+				if iBBSaveCenter >= P2Center:
+					AIHardMoving = "Stop"
+					Paddle2c.endmoveup()
+					DoubleCheck = 1
+					AILocate = 0
+	
+		#pass
+	
+	P1Prev = PaddleBox
+	if AILocate == 0 and PaddleTrigger == 0 and (Starter == 0 or (Starter == 1 and Start == 1)) and DoubleCheck == 0:
+		center = GameBoard.CanvasHeight/2
+		if center > P2Center:
+			Paddle2c.startmovedown()
+		if center < P2Center:
+			Paddle2c.startmoveup()
 	
 	
 	
@@ -485,6 +689,7 @@ def StartGame():
 
 
 
+Game = GameParameters() 
 Cato = {}
 
 
@@ -520,13 +725,16 @@ MaxBallSpeed = Cato.get("MaxBallSpeed")
 MinBallSpeed = Cato.get("MinBallSpeed")
 
 
+Pwidth = 25
 
+Paddle1c = Paddlec(1,Pwidth,80,PaddleSpeed)
+Paddle2c = Paddlec(2,Pwidth,80,PaddleSpeed)
 
-Paddle1c = Paddlec(1,25,80,PaddleSpeed)
-Paddle2c = Paddlec(2,25,80,PaddleSpeed)
+iBallc = Ballc(InitialBallSpeedX, InitialBallSpeedY, BallRadius, MaxBallSpeed*2, MaxBallSpeed*2)
+
 Ballc = Ballc(InitialBallSpeedX, InitialBallSpeedY, BallRadius, MinBallSpeed, MaxBallSpeed)
 Paddle1c.InputCoords(5, 35, 5+Paddle1c.width, 35+Paddle1c.height)
-Paddle2c.InputCoords(CanvasWidth, CanvasHeight-50, CanvasWidth-Paddle2c.width, CanvasHeight-50-Paddle2c.height)
+Paddle2c.InputCoords(CanvasWidth-5, CanvasHeight-50, CanvasWidth-Paddle2c.width-5, CanvasHeight-50-Paddle2c.height)
 Starter = random.randint(0,1)
 
 Root = Tk()
@@ -558,8 +766,8 @@ Save_Button.grid(row=3, column=3)
 Load_Button = Button(Root, text="Load Recording", command=LoadGame)
 Load_Button.grid(row=3, column = 2)
 
-Mode_Button = Button(Root, text="Player vs. Player")
-Mode_Button.grid(row=3, column = 0)
+Player_Button = Button(Root, text="Player vs. Player", command=PlayerModeSelection)
+Player_Button.grid(row=3, column = 0)
 
 w = Canvas(Root, width=CanvasWidth, height=CanvasHeight) 
 w.grid(row=1, column=0, columnspan=5, sticky = S)
@@ -581,6 +789,8 @@ WallTop = w.create_line(0,5,CanvasWidth,5,fill="white")
 WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 
 
+iWallLeft = w.create_line(Paddle1c.width+5,0,Paddle1c.width+5,CanvasHeight, fill="white")#, state = HIDDEN)
+iWallRight = w.create_line(CanvasWidth-Paddle2c.width+3-5,0,CanvasWidth-Paddle2c.width+3-5,CanvasHeight, fill="white")#, state = HIDDEN)
 GameBoard = Board(CanvasWidth, CanvasHeight, WallLeft, WallTop,WallRight,WallBottom)
 
 
@@ -604,8 +814,14 @@ Player2_Score.grid(row=0, column=4, sticky = E)
 Paddle1 = w.create_rectangle(Paddle1c.coords[0], Paddle1c.coords[1], Paddle1c.coords[2], Paddle1c.coords[3], fill="white")
 Paddle2 = w.create_rectangle(Paddle2c.coords[0], Paddle2c.coords[1], Paddle2c.coords[2], Paddle2c.coords[3], fill="white")
 
+InvisaBall = w.create_oval(0,0,(2*Ballc.radius),(2*Ballc.radius), outline="white")#, state = HIDDEN)
 Ball = w.create_oval(0,0,(2*Ballc.radius),(2*Ballc.radius), fill="white")
 Ballc.InputObject(Ball)
+iBallc.InputObject(InvisaBall)
+
+
+iBallc.CSpeed = [iBallc.ISpeed[0], iBallc.ISpeed[1]]
+#iBallc.ChangeSpeed()
 
 Ballc.InputCoords([Paddle1c.coords[2]+2, Paddle1c.middle()-Ballc.radius, Paddle1c.coords[2]+(2*Ballc.radius)+2,Paddle1c.middle()+Ballc.radius],[Paddle2c.coords[2]-(2*Ballc.radius)-2,Paddle2c.middle()-Ballc.radius,Paddle2c.coords[2]-2,Paddle2c.middle()+Ballc.radius]) 
 
@@ -621,6 +837,12 @@ Paddle2c.InputObject(Paddle2)
 
 
 bbBall = w.bbox(Ballc.obj)
+Paddle2c.ImportCanvas(w)
+
+
+
+
+
 
 
 
@@ -635,9 +857,10 @@ Root.after(20, checkcollision)
 Root.after(20, moveBall)
 Root.after(20, movepaddle)
 Root.after(20, RecordPositions)
+Root.after(20, ArtificialIntelligence)
 Root.mainloop()
 
-
+sys.exit(0)
 
 #CHECK LIST
 #Scoreboard updates-check
