@@ -1,11 +1,11 @@
 InitialBallSpeedX: 2
 InitialBallSpeedY: 3
-PaddleSpeed: 5
+PaddleSpeed: 20
 BallRadius: 20
-CanvasWidth: 900
-CanvasHeight: 700
+CanvasWidth: 500
+CanvasHeight: 500
 MaxBallSpeed: 20
 MinBallSpeed: 10
-TimedPlayDuration: 5
+TimedPlayDuration: 60
 TimedPlayMaxBallHoldTime: 5
 ScoredPlayWinPoints: 5

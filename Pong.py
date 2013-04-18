@@ -313,7 +313,8 @@ def process_collision(Mover, Other):
 	global PaddleTrigger
 	global AILocate
 	if Mover == Ball:
-		Ballc.ChangeSpeed()
+		if Other != InvisaBall:
+			Ballc.ChangeSpeed()
 		x = Ballc.CSpeed[0]
 		y = Ballc.CSpeed[1]
 		if Other == Paddle1:
