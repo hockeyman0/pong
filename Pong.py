@@ -94,7 +94,23 @@ def FreezePaddles():
 	Paddle1c.endmovedown()
 	Paddle2c.endmovedown()
 	Paddle2c.endmoveup()
-	
+
+GameMode = 0	
+def GameModeSelection():
+	global GameMode
+	if Start == 0 or EndGame ==1:
+		if Mode_Button["text"] == "Unlimited Play":
+			GameMode = 1
+			#print "yep"
+			Mode_Button["text"] = "Timed Play"
+		elif Mode_Button["text"] == "Timed Play":
+			GameMode = 2
+			Mode_Button["text"] = "Scored Play"
+		elif Mode_Button["text"] == "Scored Play":
+			GameMode = 0
+			Mode_Button["text"] = "Unlimited Play"
+
+
 	
 	
 def PlayerModeSelection():
@@ -327,11 +343,11 @@ def process_collision(Mover, Other):
 				if Other == WallLeft:
 					#ScoreBoard[1] = ScoreBoard[1] + 1
 					GameBoard.UpdateScore(1)
-					print "Player 2 Wins! Press Enter to Restart."
+					print "Player 2 Wins the Point! Press Enter to Reset."
 				else:
 					#ScoreBoard[0] = ScoreBoard[0] + 1
 					GameBoard.UpdateScore(0)
-					print "Player 1 Wins! Press Enter to Restart."
+					print "Player 1 Wins the Point! Press Enter to Reset."
 			pause = 1
 			notpause = 1
 			ballspeed = [0,0]
@@ -413,6 +429,23 @@ def RestartGame():
 	global Ballc
 	global Starter
 	global GamePositions
+	global trigger
+	global GameMode
+	global TimeCounter
+	global ReleaseCounter
+	global GameStarted
+	global FirstCheck
+	if trigger == 1:
+		w.itemconfigure(PlayerWins, text="")
+		GameBoard.ScoreBoard = [0,0]
+		GameBoard.Score1String.set(str(GameBoard.ScoreBoard[0]))
+		GameBoard.Score2String.set(str(GameBoard.ScoreBoard[1]))
+		trigger = 0
+		PauseGame()
+		TimeCounter = 0
+		ReleaseCounter = 0
+		GameStarted = 0
+			
 	
 	GamePositions = []
 	EndGame = 0
@@ -425,6 +458,12 @@ def RestartGame():
 	Paddle1c.restartpos(w)
 	Paddle2c.restartpos(w)
 	Ballc.restartpos(w, Starter)
+	FirstCheck = 0
+	
+		#GameMode= 0
+		
+		
+		
 	
 	
 def SaveGame():
@@ -513,7 +552,6 @@ def StartGame():
 def ArtificialIntelligence():
 	global PlayerMode
 	global Paddle2c
-	#print PlayerMode
 	if PlayerMode == 0:
 		Paddle2c.paddlespeed = Paddle2c.storedpaddlespeed
 	elif PlayerMode == 1:
@@ -542,23 +580,14 @@ def EasyAI():
 		Paddle2c.endmovedown()
 		Paddle2c.endmoveup()
 	PaddleBox = w.bbox(Paddle2c.obj)
-	#print PaddleBox
 	Center = (PaddleBox[1] + PaddleBox[3])/2
 	BallBox = w.bbox(Ballc.obj)
 	BallCenter = (BallBox[1] + BallBox[3])/2
-	#print AIMoving
-	#print Center
-	#print BallBox[1]
-	#print Paddle2c.moveup
-	#print Paddle2c.movedown
 	testing = (Paddle2c.moveup +Paddle2c.movedown)
-	#print testing
 	if (testing) == 0:
 		Paddle2c.endmovedown()
 		Paddle2c.endmoveup()
-		#print "YEAG"
 		AIMoving = "Stop"
-	#print AIMoving
 	if AIMoving == "Stop":
 		if ReactionTime == ReactionTimeCounter:
 			if BallBox[1] > Center:
@@ -583,11 +612,15 @@ def EasyAI():
 		ReactionTimeCounter += 1
 		
 
+
+
+
+
 PaddleTrigger = 0
 P1Prev = [0,0,0,0]
 AIHardMoving = "Stop"
 DoubleCheck = 0 
-
+FirstCheck = 0
 
 def HardAI():
 	global PaddleTrigger
@@ -605,11 +638,14 @@ def HardAI():
 	global Space
 	global DoubleCheck
 	global iBBSaveCenter
+	global GameMode
+	global FirstCheck
 	BallBox = w.bbox(Ballc.obj)
 	PaddleBox = w.bbox(Paddle1c.obj)
 	Paddle2Box = w.bbox(Paddle2c.obj)
 	#print iBallc.CSpeed
-	if PaddleTrigger == 1 or (Start == 0 and (PaddleBox != P1Prev)):
+	if PaddleTrigger == 1 or (Start == 0 and (PaddleBox != P1Prev)) or FirstCheck == 0:
+		FirstCheck = 1
 		DoubleCheck = 0
 		w.coords(iBallc.obj, BallBox[0],BallBox[1],BallBox[2],BallBox[3])
 		AILocate = 0
@@ -628,6 +664,8 @@ def HardAI():
 	iBCenter = (iBBall[1]+iBBall[3])/2
 	P2Center = (Paddle2Box[1]+Paddle2Box[3])/2	
 	#iBBSave = iBBall
+	#print AIHardMoving
+	
 	if AILocate == 1 and (Starter == 0 or (Starter == 1 and Start == 1)):
 			if AIHardMoving == "Stop":
 			
@@ -635,10 +673,14 @@ def HardAI():
 				Paddle2c.endmoveup()
 				iBBSave = iBBall
 				iBBSaveCenter = iBCenter
+				if iBBSaveCenter < (Paddle2c.height)/2:
+					iBBSaveCenter = (Paddle2c.height/2)+1
+				if iBBSaveCenter  > GameBoard.CanvasHeight - (Paddle2c.height)/2:
+					iBBSaveCenter = GameBoard.CanvasHeight - (Paddle2c.height)/2 -1 
 				if iBCenter > P2Center:
 					Paddle2c.startmovedown()
 					AIHardMoving = "Down"
-				if iBCenter < P2Center:
+				elif iBCenter < P2Center:
 					Paddle2c.startmoveup()
 					AIHardMoving = "Up"
 			elif AIHardMoving == "Down":
@@ -663,7 +705,113 @@ def HardAI():
 			Paddle2c.startmovedown()
 		if center < P2Center:
 			Paddle2c.startmoveup()
+			
+			
+	if DoubleCheck == 1:
+			w.coords(iBallc.obj, BallBox[0],BallBox[1],BallBox[2],BallBox[3])
+			iBallc.CSpeed = [Ballc.CSpeed[0], Ballc.CSpeed[1]]
+			iBallc.ChangeSpeed()
+			DoubleCheck = 2
+	if AILocate == 1 and DoubleCheck == 2:
+		DoubleCheck = 0
+	temps = Paddle2c.moveup + Paddle2c.movedown
+	if iBallc.CSpeed[0] == 0 and iBallc.CSpeed[1] == 0 and Start == 1 and temps == 0:
+		AIHardMoving = "Stop"
+		DoubleCheck = 1
 	
+	
+	if Starter == 1 and GameMode == 1 and GameBoard.ScoreBoard[0] > GameBoard.ScoreBoard[1]:
+		StartGame()
+	
+	
+	
+	
+	
+	
+GameStarted = 0 	
+TimeCounter = 0
+ReleaseCounter = 0
+GameModeLast = 0
+trigger = 0
+PlayerModeLast = 0
+def GameModeLoop():
+	global GameStarted
+	global GameBoard
+	global GameMode
+	global GameModeLast
+	global TimeCounter
+	global TimedPlayDuration
+	global Start
+	global EndGame
+	global pause
+	global PlayerWins
+	global trigger
+	global ReleaseCounter
+	global PlayerMode
+	global PlayerModeLast
+	global Ballc
+	global ScoredPlayWinPoints
+	tempcounter = 0
+	#print TimeCounter
+	#TimeCounter = TimeCounter + 20
+	if GameMode != GameModeLast or PlayerMode != PlayerModeLast:
+		GameBoard.ScoreBoard = [0,0]
+		GameBoard.Score1String.set(str(GameBoard.ScoreBoard[0]))
+		GameBoard.Score2String.set(str(GameBoard.ScoreBoard[1]))
+		TimeCounter = 0
+		GameStarted = 0
+		trigger = 0
+		#RestartGame()
+	GameModeLast = GameMode
+	PlayerModeLast = PlayerMode
+	if Start == 1 and trigger == 0:
+		GameStarted = 1
+		#trigger = 1
+	#if trigger == 1:
+	#	TimeCounter = 0
+	#	trigger = 2
+		
+		
+	if GameMode == 1 and GameStarted == 1:
+		temps = TimedPlayDuration*1000
+		if TimeCounter == temps:
+			#TimeCounter = 0
+			if trigger == 0:
+				#Ballc.FlipSpeeds()
+				PauseGame()
+				if GameBoard.ScoreBoard[0] > GameBoard.ScoreBoard[1]:
+					w.itemconfigure(PlayerWins, text="Player 1 Wins!")
+				elif GameBoard.ScoreBoard[0] < GameBoard.ScoreBoard[1]:
+					w.itemconfigure(PlayerWins, text="Player 2 Wins!")
+				else:
+					w.itemconfigure(PlayerWins, text="It's a Tie!")
+				trigger = 1
+				EndGame = 1
+		else:
+			
+			#global TimeCounter
+			#print TimeCounter
+			if EndGame != 1:
+				TimeCounter = TimeCounter + 20
+				ReleaseCounter = ReleaseCounter + 20
+				if ReleaseCounter > (TimedPlayMaxBallHoldTime*1000):
+					StartGame()
+			else:
+				ReleaseCounter = 0
+	
+	
+	if GameMode == 2 and GameStarted == 1:
+		if GameBoard.ScoreBoard[0] >= ScoredPlayWinPoints:
+			w.itemconfigure(PlayerWins, text="Player 1 Wins!")
+			trigger = 1
+			EndGame = 1
+		if GameBoard.ScoreBoard[1] >= ScoredPlayWinPoints:
+			w.itemconfigure(PlayerWins, text="Player 2 Wins!")
+			trigger = 1
+			EndGame = 1
+			
+		
+	Root.after(20, GameModeLoop)
 	
 	
 	##################################################################
@@ -723,6 +871,9 @@ CanvasWidth = Cato.get("CanvasWidth")
 CanvasHeight = Cato.get("CanvasHeight")
 MaxBallSpeed = Cato.get("MaxBallSpeed")
 MinBallSpeed = Cato.get("MinBallSpeed")
+TimedPlayDuration = Cato.get("TimedPlayDuration")
+TimedPlayMaxBallHoldTime = Cato.get("TimedPlayMaxBallHoldTime")
+ScoredPlayWinPoints = Cato.get("ScoredPlayWinPoints")
 
 
 Pwidth = 25
@@ -742,35 +893,32 @@ Root = Tk()
 
 
 
-#testvar = StringVar()
-#testvar.set(str(Starter))
-
-
-
-
-
 
 Restart_Button = Button(Root, text="Restart", command = RestartGame)#command=Print_Message)
-Restart_Button.grid(row=0, column=1)
+Restart_Button.grid(row=0, column=3, sticky = W)
 
 Pause_Button = Button(Root, text="Pause", command=PauseGame)#command=Print_Message)
-Pause_Button.grid(row=0, column=2, sticky = W)
+Pause_Button.grid(row=3, column=0, sticky = W)
 
 
 Exit_Button = Button(Root, text="Exit", command=Root.quit)
-Exit_Button.grid(row=0, column=3, sticky=E)
+Exit_Button.grid(row=3, column=4, sticky=E)
 
 Save_Button = Button(Root, text="Save Recording", command=SaveGame)
-Save_Button.grid(row=3, column=3)
+Save_Button.grid(row=3, column=2, sticky = W)
 
 Load_Button = Button(Root, text="Load Recording", command=LoadGame)
-Load_Button.grid(row=3, column = 2)
+Load_Button.grid(row=3, column = 1, sticky = W)
 
 Player_Button = Button(Root, text="Player vs. Player", command=PlayerModeSelection)
-Player_Button.grid(row=3, column = 0)
+Player_Button.grid(row=0, column = 2)
+
+Mode_Button =  Button(Root, text="Unlimited Play", command=GameModeSelection)
+Mode_Button.grid(row=0, column = 1, sticky = E)
+
 
 w = Canvas(Root, width=CanvasWidth, height=CanvasHeight) 
-w.grid(row=1, column=0, columnspan=5, sticky = S)
+w.grid(row=1, column=0, columnspan=5, sticky = W+E+N+S)
 
 
 
@@ -790,16 +938,16 @@ WallBottom = w.create_line(0,CanvasHeight,CanvasWidth,CanvasHeight,fill="white")
 
 
 iWallLeft = w.create_line(Paddle1c.width+5,0,Paddle1c.width+5,CanvasHeight, fill="white")#, state = HIDDEN)
-iWallRight = w.create_line(CanvasWidth-Paddle2c.width+3-5,0,CanvasWidth-Paddle2c.width+3-5,CanvasHeight, fill="white")#, state = HIDDEN)
+iWallRight = w.create_line(CanvasWidth-Paddle2c.width+3-10,0,CanvasWidth-Paddle2c.width+3-10,CanvasHeight, fill="white")#, state = HIDDEN)
 GameBoard = Board(CanvasWidth, CanvasHeight, WallLeft, WallTop,WallRight,WallBottom)
 
 
 
 #PLAYER SCORE BOARD DISPLAY NEEDS TO BE AFTER BOARD INITIALIZATION
 Player1_Score = Label(Root, textvariable= GameBoard.Score1String)
-Player1_Score.grid(row=0, column=0, sticky = W)
+Player1_Score.grid(row=0, column=0)
 Player2_Score = Label(Root, textvariable = GameBoard.Score2String)
-Player2_Score.grid(row=0, column=4, sticky = E)
+Player2_Score.grid(row=0, column=4)
 
 
 
@@ -845,8 +993,10 @@ Paddle2c.ImportCanvas(w)
 
 
 
-
-
+PlayerWins = w.create_text(CanvasWidth/2,CanvasHeight/2,text="")
+#PlayerTwoWins = w.create_text(CanvasWidth/2,CanvasHeight/2,text="Player 2 Wins!", state= HIDDEN)
+#PlayerTwoWins["State"] = "NORMAL"
+#PlayerWins["text"] = "It's a Tie!"
 
 Root.bind("<Key>", handle_key_event)
 Root.bind("<KeyRelease>", handle_key_release_event)
@@ -858,17 +1008,18 @@ Root.after(20, moveBall)
 Root.after(20, movepaddle)
 Root.after(20, RecordPositions)
 Root.after(20, ArtificialIntelligence)
+Root.after(20, GameModeLoop)
 Root.mainloop()
 
 sys.exit(0)
 
 #CHECK LIST
 #Scoreboard updates-check
-#move pause button-
-#move exit button
-#move restart button
+#move pause button- check
+#move exit button - check
+#move restart button -check
 #Add Game Mode toggle button
-#Add player vs player/cpu button
+#Add player vs player/cpu button - check
 #add load recording button -check 
 #add save recording button -check
 # Game Records every action in a game - Check
