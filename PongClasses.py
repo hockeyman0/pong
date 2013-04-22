@@ -135,17 +135,39 @@ class Board:
 
 class GameParameters:
 	def __init__(self):
+		self.GamePositions = []
 		self.EndGame = 0
 		self.Start = 0
 		self.pause = 0
+		self.notpause = 1
 		self.Score1 = 0
 		self.Score2 = 0
 		self.ReplayOn = 0
+		self.P1Replay = []
+		self.P2Replay = []
+		self.BReplay = []
 		self.counter = 0
-		self.ncounter = 0
-		self.GameMode = 0
+		self.Ncounter = 0
+		self.File_Name = ""
 		self.PlayerMode = 0
-		
+		self.AILocate = 0	
+		self.AIMoving = "Stop"	
+		self.ReactionTime = 10
+		self.ReactionTimeCounter = 0	
+		self.GameStarted = 0 	
+		self.TimeCounter = 0
+		self.ReleaseCounter = 0
+		self.GameModeLast = 0
+		self.trigger = 0
+		self.PlayerModeLast = 0
+		self.Pwidth = 25
+		self.GameMode = 0	
+		self.PaddleTrigger = 0
+		self.P1Prev = [0,0,0,0]
+		self.AIHardMoving = "Stop"
+		self.DoubleCheck = 0 
+		self.FirstCheck = 0
+		self.Space = 0	
 		
 class AIProperties:
 	def __init__(self):
