@@ -387,7 +387,8 @@ def RecordPositions():
 	global Paddle1c
 	global Paddle2c
 	global Ballc
-	if Start == 1 and EndGame == 0:
+	global pause
+	if Start == 1 and EndGame == 0 and pause == 0: #check for working
 		CurrentPositions = ""
 		part = []
 		bbox = w.bbox(Paddle1c.obj)
@@ -467,8 +468,8 @@ def SaveGame():
 		default += str(savetime[4])
 		default += "."
 		default += str(savetime[5])
-		default += "."
-		default += str(savetime[6])
+		#default += "."
+		#default += str(savetime[6])
 	
 		filename = tkSimpleDialog.askstring("Text Input Box","Name for file? (default date/time)")
 		if filename == "" :
@@ -734,10 +735,11 @@ def GameModeLoop():
 				EndGame = 1
 		else:
 			if EndGame != 1:
-				TimeCounter = TimeCounter + 20
-				ReleaseCounter = ReleaseCounter + 20
-				if ReleaseCounter > (TimedPlayMaxBallHoldTime*1000):
-					StartGame()
+				if pause != 1:
+					TimeCounter = TimeCounter + 20
+					ReleaseCounter = ReleaseCounter + 20
+					if ReleaseCounter > (TimedPlayMaxBallHoldTime*1000):
+						StartGame()
 			else:
 				ReleaseCounter = 0
 	if GameMode == 2 and GameStarted == 1:
@@ -926,7 +928,8 @@ bbBall = w.bbox(Ballc.obj)
 Paddle2c.ImportCanvas(w)
 
 
-
+Root.configure(background='grey') #white for my computer
+w.configure(background='white')
 
 
 
